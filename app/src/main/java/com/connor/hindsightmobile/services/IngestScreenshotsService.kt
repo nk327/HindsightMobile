@@ -17,6 +17,7 @@ import com.connor.hindsightmobile.DB
 import com.connor.hindsightmobile.MainActivity
 import com.connor.hindsightmobile.utils.NotificationHelper
 import com.connor.hindsightmobile.R
+import com.connor.hindsightmobile.embeddings.SentenceEmbeddingProvider
 import com.connor.hindsightmobile.obj.OCRResult
 import com.connor.hindsightmobile.obj.ObjectBoxFrame
 import com.connor.hindsightmobile.obj.ObjectBoxFrame_
@@ -33,7 +34,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
-import io.objectbox.kotlin.flow
 
 class IngestScreenshotsService : LifecycleService() {
     val notificationTitle: String = "Hindsight Ingest Screenshots"
@@ -41,7 +41,6 @@ class IngestScreenshotsService : LifecycleService() {
     private var stopIngest: Boolean = false
     private val dbHelper = DB(this@IngestScreenshotsService)
     private val framesBox = ObjectBoxStore.store.boxFor(ObjectBoxFrame::class.java)
-    // private val sentenceEncoder: SentenceEmbeddingProvider
 
     private val ingesterReceiver = object : BroadcastReceiver() {
         @SuppressLint("NewApi")
@@ -153,13 +152,15 @@ class IngestScreenshotsService : LifecycleService() {
                     Log.e("IngestScreenshotsService", "OCR failed for frameId $frameId", e)
                 }
             }
-            delay(500)
+            delay(100)
         }
     }
 
-    private suspend fun embedScreenshot(frameId: Int, frameText: String) {
-        Log.d("IngestScreenshotsService", "Embedding screenshot for frameId $frameId : $frameText")
-
+    private suspend fun embedScreenshot(frameId: Int, timestamp: Long, frameText: String, sentenceEncoder: SentenceEmbeddingProvider) {
+        val embedding: FloatArray = sentenceEncoder.encodeText(frameText)
+        framesBox.put(ObjectBoxFrame(frameId = frameId, timestamp = timestamp,
+            frameText = frameText, embedding = embedding))
+        Log.d("IngestScreenshotsService", "Added Embedding for frameId $frameId")
     }
 
     private suspend fun embedScreenshots() {
@@ -170,14 +171,18 @@ class IngestScreenshotsService : LifecycleService() {
 
         val ingestedFrameIds = ingestedFrameIdsArray?.toList() ?: emptyList()
         val framesWithOCR = dbHelper.getFramesWithOCRResultsNotIn(ingestedFrameIds)
+        Log.d("IngestScreenshotsService", "Running embedding on ${framesWithOCR.size} frames")
+        val sentenceEncoder = SentenceEmbeddingProvider(this@IngestScreenshotsService)
 
         for (frame in framesWithOCR) {
             val frameId = frame["frame_id"] as Int
+            val timestamp = frame["timestamp"] as Long
             val ocrResults = frame["ocr_results"] as List<Map<String, Any?>>
 
             val combinedOCR = ocrResults.joinToString(separator = "\n") { it["text"] as String }
 
-            embedScreenshot(frameId, combinedOCR)
+            embedScreenshot(frameId, timestamp, combinedOCR, sentenceEncoder)
+            delay(100)
         }
     }
 

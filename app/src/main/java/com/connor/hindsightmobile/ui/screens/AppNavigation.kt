@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.connor.hindsightmobile.screens.ChatScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -16,6 +17,9 @@ fun AppNavigation() {
     NavHost(navController = navController, startDestination = "mainSettings") {
         composable("mainSettings") {
             SettingsScreen(navController)
+        }
+        composable("chat") {
+            ChatScreen()
         }
     }
 }

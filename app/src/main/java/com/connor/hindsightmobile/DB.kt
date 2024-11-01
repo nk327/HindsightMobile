@@ -81,7 +81,7 @@ class DB(context: Context) :
 
     fun insertFrame(timestamp: Long, application: String?, videoChunkId: Int?, videoChunkOffset: Int?): Long {
         if (frameExists(timestamp, application)) {
-            Log.d("DB", "Frame with timestamp: $timestamp and application: $application already exists. Skipping insertion.")
+            // Log.d("DB", "Frame with timestamp: $timestamp and application: $application already exists. Skipping insertion.")
             return -1L // Return -1 to indicate no new insertion
         }
         val db = this.writableDatabase
@@ -201,11 +201,14 @@ class DB(context: Context) :
 
         val cursor = db.rawQuery(query, null)
 
-        val framesMap = mutableMapOf<Int, MutableList<Map<String, Any?>>>()
+        val framesMap = mutableMapOf<Int, Pair<Long, MutableList<Map<String, Any?>>>>()
 
         if (cursor.moveToFirst()) {
             do {
                 val frameId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+                val timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP))
+                val ocrText = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_TEXT)) ?: ""
+
                 val ocrResult = mapOf(
                     "text" to cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_TEXT)),
                     "x" to cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_X)),
@@ -215,21 +218,26 @@ class DB(context: Context) :
                     "confidence" to cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_CONFIDENCE)),
                     "block_num" to cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_BLOCK_NUM))
                 )
-
-                framesMap.getOrPut(frameId) { mutableListOf() }.add(ocrResult)
+                if (ocrText.isNotEmpty()) {
+                    framesMap.getOrPut(frameId) { timestamp to mutableListOf() }.second.add(ocrResult)
+                }
             } while (cursor.moveToNext())
         }
 
         cursor.close()
         db.close()
 
-        framesMap.forEach { (frameId, ocrResults) ->
-            framesWithOCRResults.add(
-                mapOf(
-                    "frame_id" to frameId,
-                    "ocr_results" to ocrResults
+        framesMap.forEach { (frameId, pair) ->
+            val (timestamp, ocrResults) = pair
+            if (ocrResults.isNotEmpty()) { // Only add if there’s at least one non-empty text result
+                framesWithOCRResults.add(
+                    mapOf(
+                        "frame_id" to frameId,
+                        "timestamp" to timestamp,
+                        "ocr_results" to ocrResults
+                    )
                 )
-            )
+            }
         }
 
         return framesWithOCRResults

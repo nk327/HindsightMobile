@@ -10,5 +10,5 @@ data class ObjectBoxFrame(
     var frameId: Int = 0,
     var timestamp: Long = 0,
     var frameText: String? = null,
-    @HnswIndex(dimensions = 384) var frameEmbedding: FloatArray = floatArrayOf()
+    @HnswIndex(dimensions = 384) var embedding: FloatArray = floatArrayOf()
 )

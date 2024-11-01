@@ -14,7 +14,8 @@ import androidx.navigation.NavController
 import com.connor.hindsightmobile.MainActivity
 
 @Composable
-fun SettingsScreen(navController: NavController){
+fun SettingsScreen(navController: NavController
+){
     val context = LocalContext.current
 
     Row(
@@ -36,6 +37,17 @@ fun SettingsScreen(navController: NavController){
                 )
         ) {
             Text("Ingest Screenshots")
+        }
+        Button(
+            onClick = {navController.navigate("chat")},
+            modifier = Modifier
+                .align(Alignment.CenterVertically)
+                .padding(top = 16.dp)
+                .padding(
+                    16.dp
+                )
+        ) {
+            Text("Chat")
         }
     }
 }
