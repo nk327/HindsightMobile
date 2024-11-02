@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">HindsightMobile</string>
+    <string name="active_recording">Active recording</string>
+    <string name="recording_finished">Recording finished</string>
+    <string name="stop">Stop</string>
+    <string name="prompt_1">
+Here is the retrieved context
+--------------------------------------------------
+$CONTEXT
+--------------------------------------------------
+Here is the user\'s query: $QUERY
+    </string>
+    <string name="info">Information</string>
+    <string name="attached_image">Attached image</string>
+    <string name="textfield_desc">Text input</string>
+    <string name="jumpBottom">Jump to bottom</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="author_me">me</string>
+    <string name="send">Send</string>
+    <string name="textfield_hint">Message</string>
+</resources>
