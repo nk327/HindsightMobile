@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.druk.lmplayground.conversation
+package com.connor.hindsightmobile.ui.elements
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -31,10 +31,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.druk.lmplayground.AppBar
-import com.druk.lmplayground.R
-import com.druk.lmplayground.models.ModelInfo
-import com.druk.lmplayground.theme.PlaygroundTheme
+import com.connor.hindsightmobile.R
+import com.connor.hindsightmobile.models.ModelInfo
+import com.connor.hindsightmobile.ui.theme.HindsightMobileTheme
 
 const val ConversationBarTestTag = "ConversationBarTestTag"
 
@@ -145,7 +144,7 @@ fun ConversationBar(
 @Preview
 @Composable
 fun ChannelBarPreview() {
-    PlaygroundTheme {
+    HindsightMobileTheme {
         ConversationBar(modelInfo = null)
     }
 }
@@ -153,7 +152,7 @@ fun ChannelBarPreview() {
 @Preview("Bar with model info")
 @Composable
 fun ChannelBarWithModelInfoPreview() {
-    PlaygroundTheme {
+    HindsightMobileTheme {
         ConversationBar(modelInfo =
             ModelInfo(
                 name = "Model Name Model Name Model Name Model Name Model Name",

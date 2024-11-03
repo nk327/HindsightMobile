@@ -1,4 +1,4 @@
-package com.druk.lmplayground.conversation
+package com.connor.hindsightmobile.ui.viewmodels
 
 import android.app.Application
 import android.app.DownloadManager
@@ -18,14 +18,14 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.druk.llamacpp.LlamaCpp
-import com.druk.llamacpp.LlamaGenerationCallback
-import com.druk.llamacpp.LlamaGenerationSession
-import com.druk.llamacpp.LlamaModel
-import com.druk.llamacpp.LlamaProgressCallback
-import com.druk.lmplayground.App
-import com.druk.lmplayground.models.ModelInfo
-import com.druk.lmplayground.models.ModelInfoProvider
+import com.connor.hindsightmobile.App
+import com.connor.hindsightmobile.models.ModelInfo
+import com.connor.hindsightmobile.models.ModelInfoProvider
+import com.connor.llamacpp.LlamaCpp
+import com.connor.llamacpp.LlamaGenerationCallback
+import com.connor.llamacpp.LlamaGenerationSession
+import com.connor.llamacpp.LlamaModel
+import com.connor.llamacpp.LlamaProgressCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive

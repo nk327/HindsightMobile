@@ -1,4 +1,4 @@
-package com.druk.lmplayground.conversation
+package com.connor.hindsightmobile.ui.screens
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -39,8 +39,14 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.druk.lmplayground.models.SelectModelDialog
-import com.druk.lmplayground.theme.PlaygroundTheme
+import com.connor.hindsightmobile.models.SelectModelDialog
+import com.connor.hindsightmobile.ui.elements.ConversationBar
+import com.connor.hindsightmobile.ui.elements.Messages
+import com.connor.hindsightmobile.ui.theme.HindsightMobileTheme
+import com.connor.hindsightmobile.ui.viewmodels.ConversationViewModel
+import com.connor.hindsightmobile.ui.elements.UserInput
+import com.connor.hindsightmobile.ui.elements.UserInputStatus
+import com.connor.hindsightmobile.ui.viewmodels.Message
 import kotlinx.coroutines.launch
 
 class ConversationFragment : Fragment() {
@@ -63,7 +69,7 @@ class ConversationFragment : Fragment() {
             val modelInfo by viewModel.loadedModel.observeAsState()
             val models by viewModel.models.observeAsState(emptyList())
 
-            PlaygroundTheme {
+            HindsightMobileTheme {
 
                 val scrollState = rememberLazyListState()
                 val topBarState = rememberTopAppBarState()

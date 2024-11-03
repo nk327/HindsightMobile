@@ -1,4 +1,4 @@
-package com.druk.lmplayground
+package com.connor.hindsightmobile.ui.elements
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -9,6 +9,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import com.connor.hindsightmobile.R
 
 @Composable
 fun AppIcon(

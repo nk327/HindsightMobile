@@ -1,4 +1,4 @@
-package com.druk.llamacpp
+package com.connor.llamacpp
 
 /**
  * The `LlamaModel` class represents a loaded large language model (LLM) in the llama.cpp library.

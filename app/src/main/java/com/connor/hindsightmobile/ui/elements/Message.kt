@@ -1,4 +1,4 @@
-package com.druk.lmplayground.conversation
+package com.connor.hindsightmobile.ui.elements
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -20,6 +20,7 @@ import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.connor.hindsightmobile.ui.viewmodels.Message
 
 @Composable
 fun Message(

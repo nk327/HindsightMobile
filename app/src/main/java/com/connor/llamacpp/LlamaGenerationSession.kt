@@ -1,4 +1,4 @@
-package com.druk.llamacpp
+package com.connor.llamacpp
 
 /**
  * Represents a generation session with a loaded language model in the llama.cpp library.

@@ -19,6 +19,16 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                cppFlags += "-std=c++11"
+            }
+        }
+
+        ndk {
+            abiFilters += setOf("arm64-v8a", "x86_64")
+        }
     }
 
     buildTypes {
@@ -39,12 +49,43 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
+
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "x86_64")
+            isUniversalApk = true
+        }
+    }
+
+    packaging.resources {
+        // Multiple dependency bring these files in. Exclude them to enable
+        // our test APK to build (has no effect on our AARs)
+        excludes += "/META-INF/AL2.0"
+        excludes += "/META-INF/LGPL2.1"
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+    }
+
     applicationVariants.configureEach {
         kotlin.sourceSets {
             getByName(name) {
                 kotlin.srcDir("build/generated/ksp/$name/kotlin")
             }
+        }
+    }
+
+    ndkVersion = "26.2.11394342"
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
         }
     }
 }
@@ -63,6 +104,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.material.iconsExtended)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.service)
     implementation("com.google.mlkit:text-recognition:16.0.0")
@@ -74,6 +116,7 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.annotations)
     implementation(libs.koin.androidx.compose)
+    implementation(libs.androidx.runtime.livedata)
     ksp(libs.koin.ksp.compiler)
 
     testImplementation(libs.junit)

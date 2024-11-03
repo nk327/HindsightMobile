@@ -1,4 +1,4 @@
-package com.druk.llamacpp
+package com.connor.llamacpp
 
 /**
  * `LlamaCpp` class provides a Java (JNI) interface for interacting with the `llama.cpp` library,

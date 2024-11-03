@@ -1,4 +1,4 @@
-package com.druk.lmplayground.conversation
+package com.connor.hindsightmobile.ui.elements
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -48,7 +48,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.druk.lmplayground.R
+import com.connor.hindsightmobile.R
 
 enum class UserInputStatus {
     IDLE,

@@ -1,4 +1,4 @@
-package com.druk.lmplayground.conversation
+package com.connor.hindsightmobile.ui.elements
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme

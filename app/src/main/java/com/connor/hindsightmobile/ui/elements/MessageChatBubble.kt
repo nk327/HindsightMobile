@@ -1,4 +1,4 @@
-package com.druk.lmplayground.conversation
+package com.connor.hindsightmobile.ui.elements
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -17,7 +17,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.druk.lmplayground.R
+import com.connor.hindsightmobile.R
+import com.connor.hindsightmobile.ui.viewmodels.Message
 
 private val ChatBubbleShape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 20.dp)
 

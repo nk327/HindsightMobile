@@ -1,4 +1,4 @@
-package com.druk.lmplayground.models
+package com.connor.hindsightmobile.models
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth

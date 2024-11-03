@@ -1,8 +1,8 @@
-package com.druk.lmplayground.conversation
+package com.connor.hindsightmobile.ui.viewmodels
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.toMutableStateList
-import com.druk.lmplayground.R
+import com.connor.hindsightmobile.R
 
 class ConversationUiState(
     initialMessages: List<Message>

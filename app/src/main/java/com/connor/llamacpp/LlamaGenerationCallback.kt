@@ -1,4 +1,4 @@
-package com.druk.llamacpp
+package com.connor.llamacpp
 
 /**
  * An interface for receiving newly generated tokens during text generation with llama.cpp.

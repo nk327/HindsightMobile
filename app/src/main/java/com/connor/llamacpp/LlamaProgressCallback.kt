@@ -1,4 +1,4 @@
-package com.druk.llamacpp
+package com.connor.llamacpp
 
 /**
  * An interface for receiving progress updates during model loading operations in the llama.cpp library.
