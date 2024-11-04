@@ -239,7 +239,50 @@ class DB(context: Context) :
                 )
             }
         }
-
         return framesWithOCRResults
+    }
+
+    fun insertVideoChunk(videoPath: String): Long {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_VIDEO_CHUNK_PATH, videoPath)
+        }
+        val chunkId = db.insert(TABLE_VIDEO_CHUNKS, null, values)
+        db.close()
+
+        if (chunkId == -1L) {
+            Log.e("DB", "Failed to insert video chunk")
+        } else {
+            Log.d("DB", "Video chunk inserted successfully with id: $chunkId")
+        }
+        return chunkId
+    }
+
+    fun getFrameIdByTimestampAndApp(timestamp: Long?, application: String?): Int? {
+        val db = this.readableDatabase
+        val query = "SELECT $COLUMN_ID FROM $TABLE_FRAMES WHERE $COLUMN_TIMESTAMP = ? AND $COLUMN_APPLICATION = ?"
+        val cursor = db.rawQuery(query, arrayOf(timestamp.toString(), application))
+
+        val frameId = if (cursor.moveToFirst()) cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)) else null
+        cursor.close()
+        db.close()
+        return frameId
+    }
+
+    fun updateFrameWithVideoChunk(frameId: Int, videoChunkId: Int, videoChunkOffset: Int): Int {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_VIDEO_CHUNK, videoChunkId)
+            put(COLUMN_VIDEO_CHUNK_OFFSET, videoChunkOffset)
+        }
+        val rowsUpdated = db.update(TABLE_FRAMES, values, "$COLUMN_ID = ?", arrayOf(frameId.toString()))
+        db.close()
+
+        if (rowsUpdated == 0) {
+            Log.e("DB", "Failed to update frame with video chunk")
+        } else {
+            Log.d("DB", "Frame $frameId updated with video chunk $videoChunkId and offset $videoChunkOffset")
+        }
+        return rowsUpdated
     }
 }

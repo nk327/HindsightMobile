@@ -14,6 +14,12 @@ fun getUnprocessedScreenshotsDirectory(context: Context): File {
     return directory
 }
 
+fun getVideoFilesDirectory(context: Context): File {
+    val directory = File(context.filesDir, "video_files")
+    if (!directory.exists()) directory.mkdirs() // Ensure the directory exists
+    return directory
+}
+
 fun parseScreenshotFilePath(filePath: String): Pair<String?, Long?> {
     val fileName = filePath.substringAfterLast("/")
     val parts = fileName.removeSuffix(".webp").split("_")

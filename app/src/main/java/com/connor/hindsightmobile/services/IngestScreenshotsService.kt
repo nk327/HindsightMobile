@@ -13,6 +13,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleService
+import com.arthenica.ffmpegkit.FFmpegKit
+import com.arthenica.ffmpegkit.ReturnCode
 import com.connor.hindsightmobile.DB
 import com.connor.hindsightmobile.MainActivity
 import com.connor.hindsightmobile.utils.NotificationHelper
@@ -24,6 +26,7 @@ import com.connor.hindsightmobile.obj.ObjectBoxFrame_
 import com.connor.hindsightmobile.obj.ObjectBoxStore
 import com.connor.hindsightmobile.utils.getImageFiles
 import com.connor.hindsightmobile.utils.getUnprocessedScreenshotsDirectory
+import com.connor.hindsightmobile.utils.getVideoFilesDirectory
 import com.connor.hindsightmobile.utils.parseScreenshotFilePath
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -33,11 +36,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.BufferedWriter
 import java.io.File
+import java.io.FileWriter
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class IngestScreenshotsService : LifecycleService() {
     val notificationTitle: String = "Hindsight Ingest Screenshots"
     private lateinit var unprocessedScreenshotsDirectory: File
+    private lateinit var videoFilesDirectory: File
     private var stopIngest: Boolean = false
     private val dbHelper = DB(this@IngestScreenshotsService)
     private val framesBox = ObjectBoxStore.store.boxFor(ObjectBoxFrame::class.java)
@@ -87,6 +97,7 @@ class IngestScreenshotsService : LifecycleService() {
         sendBroadcast(Intent(INGEST_SCREENSHOTS_STARTED))
 
         unprocessedScreenshotsDirectory = getUnprocessedScreenshotsDirectory(this)
+        videoFilesDirectory = getVideoFilesDirectory(this)
 
         CoroutineScope(Dispatchers.IO).launch {
             ingestScreenshots()
@@ -186,12 +197,101 @@ class IngestScreenshotsService : LifecycleService() {
         }
     }
 
+    private fun addVideoChunkToDatabase(screenshotFiles: List<File>, videoFile: File) {
+        // Insert video file into the video_chunks table
+        val videoChunkId = dbHelper.insertVideoChunk(videoFile.path)
+        if (videoChunkId != -1L) {
+            // Update each frame with the video chunk ID and offset
+            screenshotFiles.forEachIndexed { index, file ->
+                val (application, timestamp) = parseScreenshotFilePath(file.name)
+                val frameId = dbHelper.getFrameIdByTimestampAndApp(timestamp, application)
+                if (frameId != null) {
+                    dbHelper.updateFrameWithVideoChunk(frameId, videoChunkId.toInt(), index)
+                }
+            }
+            Log.d("IngestScreenshotsService", "Video chunk and offsets updated for frames")
+        } else {
+            Log.e("IngestScreenshotsService", "Failed to insert video chunk into database")
+        }
+    }
+
+    private fun createVideoFromScreenshots(screenshotFiles: List<File>, outputFile: File) {
+        // Create a temporary text file listing all screenshot file paths
+        val fileList = File(cacheDir, "screenshot_list.txt")
+        BufferedWriter(FileWriter(fileList)).use { writer ->
+            screenshotFiles.forEach { file ->
+                writer.write("file '${file.path}'\n")
+                writer.write("duration 2\n")
+            }
+        }
+
+//        FFmpegKit.execute("-codecs").also { session ->
+//            Log.d("FFmpeg Codecs", session.allLogsAsString)
+//        }
+
+        val ffmpegCommand = "-f concat -safe 0 -i ${fileList.path} -c:v h264 -pix_fmt yuv420p -r 1 ${outputFile.path}"
+
+        FFmpegKit.execute(ffmpegCommand).also { session ->
+            if (ReturnCode.isSuccess(session.getReturnCode())) {
+                Log.d("IngestScreenshotsService", "Video created successfully: ${outputFile.path}")
+                addVideoChunkToDatabase(screenshotFiles, outputFile)
+
+                screenshotFiles.forEach { file ->
+                    if (file.exists()) {
+                        if (file.delete()) {
+                            Log.d("IngestScreenshotsService", "Deleted screenshot file: ${file.path}")
+                        } else {
+                            Log.e("IngestScreenshotsService", "Failed to delete screenshot file: ${file.path}")
+                        }
+                    }
+                }
+            } else {
+                Log.e("IngestScreenshotsService", "Error creating video: ${session.returnCode}")
+            }
+        }
+
+        // Clean up the temporary file
+        fileList.delete()
+    }
+
+    private suspend fun compressScreenshotsIntoVideos() {
+        val dateFormatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        val today = dateFormatter.format(Calendar.getInstance().time)
+
+        val groupedScreenshots = getImageFiles(unprocessedScreenshotsDirectory).groupBy { file ->
+            val (application, timestamp) = parseScreenshotFilePath(file.name)
+            val date = dateFormatter.format(Date(timestamp ?: 0L))
+            Pair(date, application)
+        }
+
+        groupedScreenshots.forEach { (dateAppPair, screenshotFiles) ->
+            val (date, application) = dateAppPair
+
+            if (date < today && screenshotFiles.isNotEmpty()) { // Don't run on screenshots from today
+                // Sort screenshots by timestamp to ensure chronological order
+                val sortedScreenshots = screenshotFiles.sortedBy { file ->
+                    val (_, timestamp) = parseScreenshotFilePath(file.name)
+                    timestamp ?: 0L
+                }
+
+                val videoFile = File(videoFilesDirectory, "${application}_$date.mp4")
+                createVideoFromScreenshots(sortedScreenshots, videoFile)
+            }
+        }
+        Log.d("IngestScreenshotsService", "Compression into videos completed")
+    }
+
     private suspend fun ingestScreenshots() {
         val screenshotFiles = getImageFiles(unprocessedScreenshotsDirectory)
+        val sortedScreenshots = screenshotFiles.sortedBy { file ->
+            val (_, timestamp) = parseScreenshotFilePath(file.name)
+            timestamp ?: 0L
+        }
         Log.d("IngestScreenshotsService", "Ingesting ${screenshotFiles.size} screenshots")
-        ingestScreenshotsIntoFrames(screenshotFiles)
+        ingestScreenshotsIntoFrames(sortedScreenshots)
         runAllOCR()
         embedScreenshots()
+        compressScreenshotsIntoVideos()
 
         sendBroadcast(Intent(INGEST_SCREENSHOTS_FINISHED))
     }

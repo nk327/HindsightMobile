@@ -113,6 +113,8 @@ dependencies {
     implementation("io.objectbox:objectbox-android:4.0.3")
     implementation("com.github.shubham0204:Sentence-Embeddings-Android:0.0.5")
 
+    implementation("com.arthenica:ffmpeg-kit-full:6.0-2")
+
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.annotations)
