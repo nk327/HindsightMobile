@@ -7,7 +7,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.connor.hindsightmobile.ui.screens.ConversationFragment
+import com.connor.hindsightmobile.ui.screens.ConversationScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -19,7 +19,7 @@ fun AppNavigation() {
             SettingsScreen(navController)
         }
         composable("chat") {
-            ConversationFragment()
+            ConversationScreen()
         }
     }
 }

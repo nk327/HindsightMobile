@@ -12,6 +12,7 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.text.format.Formatter
+import android.util.Log
 import androidx.annotation.MainThread
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
@@ -21,6 +22,7 @@ import androidx.lifecycle.viewModelScope
 import com.connor.hindsightmobile.App
 import com.connor.hindsightmobile.models.ModelInfo
 import com.connor.hindsightmobile.models.ModelInfoProvider
+import com.connor.hindsightmobile.obj.ContextRetriever
 import com.connor.llamacpp.LlamaCpp
 import com.connor.llamacpp.LlamaGenerationCallback
 import com.connor.llamacpp.LlamaGenerationSession
@@ -48,6 +50,7 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
     private val downloadManager: DownloadManager by lazy {
         app.getSystemService(DOWNLOAD_SERVICE) as DownloadManager
     }
+    private val contextRetriever: ContextRetriever = ContextRetriever(app)
 
     val isGenerating: LiveData<Boolean> = _isGenerating
     val modelLoadingProgress: LiveData<Float> = _modelLoadingProgress
@@ -127,6 +130,7 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
         val llamaCpp = llamaCpp ?: return
         _models.postValue(emptyList())
         viewModelScope.launch {
+
             withContext(Dispatchers.Default) {
                 _modelLoadingProgress.postValue(0f)
                 _loadedModel.postValue(
@@ -164,6 +168,8 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
         }
     }
 
+
+
     @MainThread
     fun addMessage(message: Message) {
         uiState.addMessage(message)
@@ -174,12 +180,24 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
             )
         )
 
-        val antiPrompt = _loadedModel.value?.antiPrompt
-        _isGenerating.postValue(true)
-        generatingJob = viewModelScope.launch {
-            withContext(Dispatchers.Default) {
-                val llamaSession = llamaSession ?: return@withContext
-                llamaSession.addMessage(message.content)
+        viewModelScope.launch {
+
+            val personalContext = withContext(Dispatchers.IO) {
+                contextRetriever.getContext(message.content)
+            }
+
+            val messageWithContext = "$personalContext \n Only using the context above " +
+                    "answer the question: ${message.content}"
+
+            val antiPrompt = _loadedModel.value?.antiPrompt
+            _isGenerating.postValue(true)
+
+            Log.d("ConversationViewModel", "messageWithContext: $messageWithContext")
+
+            generatingJob = launch(Dispatchers.Default) {
+                Log.d("ConversationViewModel", "generatingJob launched")
+                val llamaSession = llamaSession ?: return@launch
+                llamaSession.addMessage(messageWithContext)
 
                 val callback = object: LlamaGenerationCallback {
                     var responseByteArray = ByteArray(0)
