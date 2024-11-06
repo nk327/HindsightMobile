@@ -10,9 +10,11 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.ReturnCode
 import com.connor.hindsightmobile.DB
@@ -20,6 +22,7 @@ import com.connor.hindsightmobile.MainActivity
 import com.connor.hindsightmobile.utils.NotificationHelper
 import com.connor.hindsightmobile.R
 import com.connor.hindsightmobile.embeddings.SentenceEmbeddingProvider
+import com.connor.hindsightmobile.obj.MyObjectBox
 import com.connor.hindsightmobile.obj.OCRResult
 import com.connor.hindsightmobile.obj.ObjectBoxFrame
 import com.connor.hindsightmobile.obj.ObjectBoxFrame_
@@ -28,12 +31,12 @@ import com.connor.hindsightmobile.utils.getImageFiles
 import com.connor.hindsightmobile.utils.getUnprocessedScreenshotsDirectory
 import com.connor.hindsightmobile.utils.getVideoFilesDirectory
 import com.connor.hindsightmobile.utils.parseScreenshotFilePath
+import com.connor.hindsightmobile.utils.processOCRResults
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import io.objectbox.Box
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.BufferedWriter
@@ -43,14 +46,18 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.tasks.await
 
 class IngestScreenshotsService : LifecycleService() {
     val notificationTitle: String = "Hindsight Ingest Screenshots"
     private lateinit var unprocessedScreenshotsDirectory: File
     private lateinit var videoFilesDirectory: File
+    private lateinit var dbHelper: DB
     private var stopIngest: Boolean = false
-    private val dbHelper = DB(this@IngestScreenshotsService)
-    private val framesBox = ObjectBoxStore.store.boxFor(ObjectBoxFrame::class.java)
+
+    private val isTest = true
+
+    private lateinit var framesBox: Box<ObjectBoxFrame>
 
     private val ingesterReceiver = object : BroadcastReceiver() {
         @SuppressLint("NewApi")
@@ -97,10 +104,40 @@ class IngestScreenshotsService : LifecycleService() {
         sendBroadcast(Intent(INGEST_SCREENSHOTS_STARTED))
 
         unprocessedScreenshotsDirectory = getUnprocessedScreenshotsDirectory(this)
-        videoFilesDirectory = getVideoFilesDirectory(this)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        if (isTest) {
+            val dbFile = this.getDatabasePath("hindsight_test.db")
+//            if (dbFile.exists()) {
+//                if (dbFile.delete()) {
+//                    Log.d("IngestScreenshotsService", "Deleted existing database file: ${dbFile.path}")
+//                } else {
+//                    Log.e("IngestScreenshotsService", "Failed to delete database file: ${dbFile.path}")
+//                }
+//            }
+            dbHelper = DB.getInstance(this@IngestScreenshotsService, "hindsight_test.db")
+            videoFilesDirectory = File(getVideoFilesDirectory(this).parent, getVideoFilesDirectory(this).name + "_test")
+            if (!videoFilesDirectory.exists()) videoFilesDirectory.mkdirs()
+
+            val testDirectory = File(this.filesDir, "objectbox-test")
+            if (testDirectory.exists()) {
+                testDirectory.deleteRecursively()
+                Log.d("IngestScreenshotsService", "Deleted existing ObjectBox test database")
+            }
+            val objectBoxStore = MyObjectBox.builder()
+                .androidContext(this)
+                .directory(testDirectory)
+                .build()
+
+            framesBox = objectBoxStore!!.boxFor(ObjectBoxFrame::class.java)
+        } else{
+            dbHelper = DB.getInstance(this@IngestScreenshotsService)
+            videoFilesDirectory = getVideoFilesDirectory(this)
+            framesBox = ObjectBoxStore.store.boxFor(ObjectBoxFrame::class.java)
+        }
+
+        lifecycleScope.launch {
             ingestScreenshots()
+            onDestroy()
         }
 
         super.onCreate()
@@ -118,30 +155,28 @@ class IngestScreenshotsService : LifecycleService() {
 
     private suspend fun runOCR(screenshotFile: File, frameId: Int, recognition: TextRecognizer) {
         val image = InputImage.fromFilePath(this, screenshotFile.toUri())
-
-        recognition.process(image)
-                .addOnSuccessListener { ocrResult ->
-                    Log.d("IngestScreenshotsService", "OCR Result Screenshot: $screenshotFile")
-                    val ocrResults = mutableListOf<OCRResult>()
-                    var blockNum = 0
-                    for (block in ocrResult.textBlocks) {
-                        for (line in block.lines) {
-                            val lineText = line.text
-                            val lineFrame = line.boundingBox
-                            val lineX = lineFrame?.left ?: 0
-                            val lineY = lineFrame?.top ?: 0
-                            val lineW = lineFrame?.width() ?: 0
-                            val lineH = lineFrame?.height() ?: 0
-                            val lineConfidence = line.confidence ?: 0f
-                            ocrResults.add(OCRResult(lineText, lineX, lineY, lineW, lineH, lineConfidence, blockNum))
-                        }
-                        blockNum++
-                    }
-                    dbHelper.insertOCRResults(frameId, ocrResults)
+        try {
+            val ocrResult = recognition.process(image).await()
+            Log.d("IngestScreenshotsService", "OCR Result Screenshot: $screenshotFile")
+            val ocrResults = mutableListOf<OCRResult>()
+            var blockNum = 0
+            for (block in ocrResult.textBlocks) {
+                for (line in block.lines) {
+                    val lineText = line.text
+                    val lineFrame = line.boundingBox
+                    val lineX = lineFrame?.left ?: 0
+                    val lineY = lineFrame?.top ?: 0
+                    val lineW = lineFrame?.width() ?: 0
+                    val lineH = lineFrame?.height() ?: 0
+                    val lineConfidence = line.confidence ?: 0f
+                    ocrResults.add(OCRResult(lineText, lineX, lineY, lineW, lineH, lineConfidence, blockNum))
                 }
-                .addOnFailureListener { e ->
-                    Log.e("IngestScreenshotsService", "Error performing OCR", e)
-                }
+                blockNum++
+            }
+            dbHelper.insertOCRResults(frameId, ocrResults)
+        } catch (e: Exception) {
+            Log.e("IngestScreenshotsService", "Error performing OCR", e)
+        }
     }
 
     private suspend fun runAllOCR(){
@@ -168,6 +203,7 @@ class IngestScreenshotsService : LifecycleService() {
     }
 
     private suspend fun embedScreenshot(frameId: Int, timestamp: Long, frameText: String, sentenceEncoder: SentenceEmbeddingProvider) {
+        Log.d("IngestScreenshotsService", "Embedding for frameId $frameId with text \n $frameText")
         val embedding: FloatArray = sentenceEncoder.encodeText(frameText)
         framesBox.put(ObjectBoxFrame(frameId = frameId, timestamp = timestamp,
             frameText = frameText, embedding = embedding))
@@ -190,7 +226,7 @@ class IngestScreenshotsService : LifecycleService() {
             val timestamp = frame["timestamp"] as Long
             val ocrResults = frame["ocr_results"] as List<Map<String, Any?>>
 
-            val combinedOCR = ocrResults.joinToString(separator = "\n") { it["text"] as String }
+            val combinedOCR = processOCRResults(ocrResults)
 
             embedScreenshot(frameId, timestamp, combinedOCR, sentenceEncoder)
             delay(100)
@@ -282,18 +318,21 @@ class IngestScreenshotsService : LifecycleService() {
     }
 
     private suspend fun ingestScreenshots() {
-        val screenshotFiles = getImageFiles(unprocessedScreenshotsDirectory)
-        val sortedScreenshots = screenshotFiles.sortedBy { file ->
-            val (_, timestamp) = parseScreenshotFilePath(file.name)
-            timestamp ?: 0L
-        }
-        Log.d("IngestScreenshotsService", "Ingesting ${screenshotFiles.size} screenshots")
-        ingestScreenshotsIntoFrames(sortedScreenshots)
-        runAllOCR()
-        embedScreenshots()
-        compressScreenshotsIntoVideos()
+        try {
+            val screenshotFiles = getImageFiles(unprocessedScreenshotsDirectory)
+            val sortedScreenshots = screenshotFiles.sortedBy { file ->
+                val (_, timestamp) = parseScreenshotFilePath(file.name)
+                timestamp ?: 0L
+            }
+            Log.d("IngestScreenshotsService", "Ingesting screenshots")
+            ingestScreenshotsIntoFrames(sortedScreenshots)
+            runAllOCR()
+            embedScreenshots()
+            compressScreenshotsIntoVideos()
 
-        sendBroadcast(Intent(INGEST_SCREENSHOTS_FINISHED))
+        } catch (e: Exception) {
+            Log.e("IngestScreenshotsService", "Error during ingestion", e)
+        }
     }
 
     private fun getPendingIntent(intent: Intent, requestCode: Int): PendingIntent =
@@ -340,10 +379,20 @@ class IngestScreenshotsService : LifecycleService() {
 
     override fun onDestroy() {
         Log.d("IngestScreenshotsService", "onDestroy")
+        sendBroadcast(Intent(INGEST_SCREENSHOTS_FINISHED))
         stopIngest = true
         isRunning = false
-        stopForeground(true)
-        super.onDestroy()
+
+        lifecycleScope.launch {
+            runCatching {
+                unregisterReceiver(ingesterReceiver)
+            }
+
+            ServiceCompat.stopForeground(this@IngestScreenshotsService, ServiceCompat.STOP_FOREGROUND_REMOVE)
+            Log.d("IngestScreenshotsService", "onDestroy")
+            stopSelf()
+            super.onDestroy()
+        }
     }
 
     companion object {

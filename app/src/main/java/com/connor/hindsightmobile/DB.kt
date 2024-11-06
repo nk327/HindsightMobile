@@ -7,8 +7,9 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import com.connor.hindsightmobile.obj.OCRResult
 
-class DB(context: Context) :
-    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class DB private constructor(context: Context, databaseName: String = DATABASE_NAME) :
+    SQLiteOpenHelper(context, databaseName, null, DATABASE_VERSION) {
+
      companion object {
          private const val DATABASE_NAME = "hindsight.db"
          private const val DATABASE_VERSION = 1
@@ -35,6 +36,12 @@ class DB(context: Context) :
          private const val COLUMN_OCR_RESULT_CONFIDENCE = "confidence"
          private const val COLUMN_OCR_RESULT_BLOCK_NUM = "block_num"
 
+         @Volatile private var instance: DB? = null
+
+         fun getInstance(context: Context, databaseName: String = DATABASE_NAME): DB =
+             instance ?: synchronized(this) {
+                 instance ?: DB(context.applicationContext, databaseName).also { instance = it }
+             }
      }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -93,7 +100,6 @@ class DB(context: Context) :
         }
 
         val result = db.insert(TABLE_FRAMES, null, values)
-        db.close()
 
         if (result == -1L) {
             Log.e("DB", "Failed to insert frame")
@@ -111,7 +117,6 @@ class DB(context: Context) :
 
         val exists = cursor.moveToFirst()
         cursor.close()
-        db.close()
 
         return exists
     }
@@ -145,7 +150,6 @@ class DB(context: Context) :
             return -1L
         } finally {
             db.endTransaction()
-            db.close()
         }
         return results.size.toLong()
     }
@@ -177,7 +181,6 @@ class DB(context: Context) :
         }
 
         cursor.close()
-        db.close()
 
         return framesWithoutOCR
     }
@@ -225,7 +228,6 @@ class DB(context: Context) :
         }
 
         cursor.close()
-        db.close()
 
         framesMap.forEach { (frameId, pair) ->
             val (timestamp, ocrResults) = pair
@@ -248,7 +250,6 @@ class DB(context: Context) :
             put(COLUMN_VIDEO_CHUNK_PATH, videoPath)
         }
         val chunkId = db.insert(TABLE_VIDEO_CHUNKS, null, values)
-        db.close()
 
         if (chunkId == -1L) {
             Log.e("DB", "Failed to insert video chunk")
@@ -265,7 +266,6 @@ class DB(context: Context) :
 
         val frameId = if (cursor.moveToFirst()) cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)) else null
         cursor.close()
-        db.close()
         return frameId
     }
 
@@ -276,7 +276,6 @@ class DB(context: Context) :
             put(COLUMN_VIDEO_CHUNK_OFFSET, videoChunkOffset)
         }
         val rowsUpdated = db.update(TABLE_FRAMES, values, "$COLUMN_ID = ?", arrayOf(frameId.toString()))
-        db.close()
 
         if (rowsUpdated == 0) {
             Log.e("DB", "Failed to update frame with video chunk")

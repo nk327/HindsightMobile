@@ -115,6 +115,8 @@ dependencies {
 
     implementation("com.arthenica:ffmpeg-kit-full:6.0-2")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.1")
+
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.annotations)

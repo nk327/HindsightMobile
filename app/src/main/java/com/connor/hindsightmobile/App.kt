@@ -4,6 +4,7 @@ import android.app.Application
 import com.connor.hindsightmobile.di.AppModule
 import com.connor.hindsightmobile.obj.ObjectBoxStore
 import com.connor.hindsightmobile.utils.NotificationHelper
+import com.connor.hindsightmobile.utils.Preferences
 import com.connor.llamacpp.LlamaCpp
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -18,7 +19,7 @@ class App : Application() {
 //            androidContext(this@App)
 //            modules(AppModule().module)
 //        }
-        // Preferences.init(this)
+        Preferences.init(this)
         NotificationHelper.buildNotificationChannels(this)
         ObjectBoxStore.init(this)
         llamaCpp.init()

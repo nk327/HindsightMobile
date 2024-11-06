@@ -22,7 +22,9 @@ import androidx.lifecycle.viewModelScope
 import com.connor.hindsightmobile.App
 import com.connor.hindsightmobile.models.ModelInfo
 import com.connor.hindsightmobile.models.ModelInfoProvider
+import com.connor.hindsightmobile.models.RecorderModel
 import com.connor.hindsightmobile.obj.ContextRetriever
+import com.connor.hindsightmobile.services.BackgroundRecorderService
 import com.connor.llamacpp.LlamaCpp
 import com.connor.llamacpp.LlamaGenerationCallback
 import com.connor.llamacpp.LlamaGenerationSession
@@ -186,7 +188,7 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
                 contextRetriever.getContext(message.content)
             }
 
-            val messageWithContext = "$personalContext \n Only using the context above " +
+            val messageWithContext = "${personalContext.contextString} \n Only using the context above " +
                     "answer the question: ${message.content}"
 
             val antiPrompt = _loadedModel.value?.antiPrompt
