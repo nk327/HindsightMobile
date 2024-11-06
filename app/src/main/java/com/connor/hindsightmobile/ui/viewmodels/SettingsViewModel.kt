@@ -24,6 +24,16 @@ class SettingsViewModel(val app: Application) : AndroidViewModel(app) {
     )
     val screenRecordingEnabled = _screenRecordingEnabled.asStateFlow()
 
+    private val _autoIngestEnabled = MutableStateFlow(
+        Preferences.prefs.getBoolean(Preferences.autoingestenabled, false)
+    )
+    val autoIngestEnabled = _autoIngestEnabled.asStateFlow()
+
+    private val _autoIngestTime = MutableStateFlow(
+        Preferences.prefs.getInt(Preferences.autoingesttime, 2)
+    )
+    val autoIngestTime = _autoIngestTime.asStateFlow()
+
     private val _eventChannel = Channel<UIEvent>()
     val events = _eventChannel.receiveAsFlow()
 
@@ -79,6 +89,18 @@ class SettingsViewModel(val app: Application) : AndroidViewModel(app) {
                 _eventChannel.send(UIEvent.StopScreenRecording)
             }
         }
+    }
+
+    fun toggleAutoIngest() {
+        _autoIngestEnabled.value = !_autoIngestEnabled.value
+        Preferences.prefs.edit().putBoolean(Preferences.autoingestenabled, _autoIngestEnabled.value)
+            .apply()
+    }
+
+    fun updateAutoIngestTime(time: Int) {
+        _autoIngestTime.value = time
+        Preferences.prefs.edit().putInt(Preferences.autoingesttime, _autoIngestTime.value)
+            .apply()
     }
 
     sealed class UIEvent {

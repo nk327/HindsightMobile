@@ -119,10 +119,10 @@ class IngestScreenshotsService : LifecycleService() {
             if (!videoFilesDirectory.exists()) videoFilesDirectory.mkdirs()
 
             val testDirectory = File(this.filesDir, "objectbox-test")
-            if (testDirectory.exists()) {
-                testDirectory.deleteRecursively()
-                Log.d("IngestScreenshotsService", "Deleted existing ObjectBox test database")
-            }
+//            if (testDirectory.exists()) {
+//                testDirectory.deleteRecursively()
+//                Log.d("IngestScreenshotsService", "Deleted existing ObjectBox test database")
+//            }
             val objectBoxStore = MyObjectBox.builder()
                 .androidContext(this)
                 .directory(testDirectory)
@@ -260,10 +260,6 @@ class IngestScreenshotsService : LifecycleService() {
                 writer.write("duration 2\n")
             }
         }
-
-//        FFmpegKit.execute("-codecs").also { session ->
-//            Log.d("FFmpeg Codecs", session.allLogsAsString)
-//        }
 
         val ffmpegCommand = "-f concat -safe 0 -i ${fileList.path} -c:v h264 -pix_fmt yuv420p -r 1 ${outputFile.path}"
 

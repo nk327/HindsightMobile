@@ -25,6 +25,7 @@ import com.connor.hindsightmobile.models.ModelInfoProvider
 import com.connor.hindsightmobile.models.RecorderModel
 import com.connor.hindsightmobile.obj.ContextRetriever
 import com.connor.hindsightmobile.services.BackgroundRecorderService
+import com.connor.hindsightmobile.utils.Preferences
 import com.connor.llamacpp.LlamaCpp
 import com.connor.llamacpp.LlamaGenerationCallback
 import com.connor.llamacpp.LlamaGenerationSession
@@ -104,6 +105,15 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
             IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
             ContextCompat.RECEIVER_EXPORTED
         )
+
+        val defaultModelName = Preferences.prefs.getString(Preferences.defaultllmname, null)
+        if (defaultModelName != null) {
+            val defaultModel =
+                ModelInfoProvider.buildModelList().firstOrNull { it.name == defaultModelName }
+            if (defaultModel != null) {
+                loadModel(defaultModel)
+            }
+        }
     }
 
     override fun onCleared() {
@@ -128,6 +138,9 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
 
     @MainThread
     fun loadModel(modelInfo: ModelInfo) {
+        Preferences.prefs.edit().putString(Preferences.defaultllmname, modelInfo.name)
+            .apply()
+
         val file = modelInfo.file ?: return
         val llamaCpp = llamaCpp ?: return
         _models.postValue(emptyList())

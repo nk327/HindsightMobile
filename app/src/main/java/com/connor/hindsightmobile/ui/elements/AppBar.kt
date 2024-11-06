@@ -22,7 +22,7 @@ import com.connor.hindsightmobile.ui.theme.HindsightMobileTheme
 fun AppBar(
     modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    onNavIconPressed: () -> Unit = { },
+    onSettingsIconPressed: () -> Unit = { },
     title: @Composable () -> Unit,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
@@ -36,7 +36,7 @@ fun AppBar(
                 contentDescription = stringResource(id = R.string.navigation_drawer_open),
                 modifier = Modifier
                     .size(64.dp)
-                    .clickable(onClick = onNavIconPressed)
+                    .clickable(onClick = onSettingsIconPressed)
                     .padding(16.dp)
             )
         }

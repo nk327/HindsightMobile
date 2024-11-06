@@ -2,7 +2,6 @@ package com.connor.hindsightmobile.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
@@ -42,10 +41,11 @@ import com.connor.hindsightmobile.ui.elements.UserInputStatus
 import com.connor.hindsightmobile.ui.viewmodels.Message
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConversationScreen(viewModel: ConversationViewModel = viewModel()) {
+fun ConversationScreen(navController: NavController, viewModel: ConversationViewModel = viewModel()) {
 
     val messages = viewModel.uiState.messages
     val isGenerating by viewModel.isGenerating.observeAsState()
@@ -67,8 +67,8 @@ fun ConversationScreen(viewModel: ConversationViewModel = viewModel()) {
             topBar = {
                 ConversationBar(
                     modelInfo = modelInfo,
-                    onNavIconPressed = {
-                        modelReport = viewModel.getReport()
+                    onSettingsIconPressed = {
+                        navController.navigate("mainSettings")
                     },
                     scrollBehavior = scrollBehavior,
                     onSelectModelPressed = {

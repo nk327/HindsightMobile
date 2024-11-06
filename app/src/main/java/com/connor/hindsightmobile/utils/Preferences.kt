@@ -9,6 +9,10 @@ object Preferences {
 
     const val screenrecordingenabled = "ScreenRecordingEnabled"
     const val recordwhenactive = "RecordWhenActive"
+    const val autoingestenabled = "AutoIngest"
+    const val autoingesttime = "AutoIngestTime"
+    const val audoingestinterval = "AutoIngestInterval"
+    const val defaultllmname = "DefaultLLMName"
 
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
@@ -21,5 +25,12 @@ object Preferences {
             prefs.edit().putBoolean(recordwhenactive, true).apply()
         }
 
+        if (!prefs.contains(autoingestenabled)) {
+            prefs.edit().putBoolean(autoingestenabled, true).apply()
+        }
+
+        if (!prefs.contains(autoingesttime)) {
+            prefs.edit().putInt(autoingesttime, 2).apply()
+        }
     }
 }

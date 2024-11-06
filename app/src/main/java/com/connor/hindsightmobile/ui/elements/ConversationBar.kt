@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Eject
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,7 +45,7 @@ fun ConversationBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     onSelectModelPressed: () -> Unit = { },
     onUnloadModelPressed: () -> Unit = { },
-    onNavIconPressed: () -> Unit = { }
+    onSettingsIconPressed: () -> Unit = { }
 ) {
     var functionalityNotAvailablePopupShown by remember { mutableStateOf(false) }
     if (functionalityNotAvailablePopupShown) {
@@ -53,7 +54,7 @@ fun ConversationBar(
     AppBar(
         modifier = modifier.testTag(ConversationBarTestTag),
         scrollBehavior = scrollBehavior,
-        onNavIconPressed = onNavIconPressed,
+        onSettingsIconPressed = onSettingsIconPressed,
         title = {
             if (modelInfo != null) {
                 Button(onClick = onUnloadModelPressed,
@@ -114,29 +115,15 @@ fun ConversationBar(
             }
         },
         actions = {
-            if (modelInfo != null) {
-                // Info icon
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .clickable(onClick = onNavIconPressed)
-                        .padding(horizontal = 12.dp, vertical = 16.dp)
-                        .height(24.dp),
-                    contentDescription = stringResource(id = R.string.info)
-                )
-            }
-            else {
-                // Info icon
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    tint = MaterialTheme.colorScheme.outlineVariant,
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp, vertical = 16.dp)
-                        .height(24.dp),
-                    contentDescription = stringResource(id = R.string.info)
-                )
-            }
+            Icon(
+                imageVector = Icons.Outlined.Settings,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .clickable(onClick = onSettingsIconPressed)
+                    .padding(horizontal = 12.dp, vertical = 16.dp)
+                    .height(24.dp),
+                contentDescription = stringResource(id = R.string.info)
+            )
         }
     )
 }

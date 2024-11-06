@@ -32,5 +32,5 @@ data class Message(
     val authorImage: Int = if (author == "User")
         R.drawable.ic_baseline_person
     else
-        R.drawable.penrose_triangle_monochrome
+        R.drawable.hindsight_icon
 )

@@ -14,12 +14,12 @@ import com.connor.hindsightmobile.ui.screens.ConversationScreen
 fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
-    NavHost(navController = navController, startDestination = "mainSettings") {
+    NavHost(navController = navController, startDestination = "chat") {
         composable("mainSettings") {
             SettingsScreen(navController)
         }
         composable("chat") {
-            ConversationScreen()
+            ConversationScreen(navController)
         }
     }
 }

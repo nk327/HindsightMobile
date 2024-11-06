@@ -63,7 +63,9 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        scheduleIngestAlarm(this)
+        if (Preferences.prefs.getBoolean(Preferences.autoingestenabled, false)) {
+            scheduleIngestAlarm(this)
+        }
     }
 
     fun requestScreenCapturePermission() {
@@ -116,9 +118,10 @@ fun scheduleIngestAlarm(context: Context) {
         )
     }
 
+    val autoIngestTime = Preferences.prefs.getInt(Preferences.autoingesttime, 2)
     val calendar = Calendar.getInstance().apply {
         timeInMillis = System.currentTimeMillis()
-        set(Calendar.HOUR_OF_DAY, 2)
+        set(Calendar.HOUR_OF_DAY, autoIngestTime)
         set(Calendar.MINUTE, 0)
         set(Calendar.SECOND, 0)
     }
