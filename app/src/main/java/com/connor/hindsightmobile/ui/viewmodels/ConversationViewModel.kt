@@ -201,8 +201,14 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
                 contextRetriever.getContext(message.content)
             }
 
-            val messageWithContext = "${personalContext.contextString} \n Only using the context above " +
-                    "answer the question: ${message.content}"
+            val messageWithContext = if (personalContext.contextString == "") {
+                "The user has no context to answer the question: ${message.content}. " +
+                        "Make a joke encouraging the user to go to the Hindsight app settings and " +
+                        "turn on screen recording to get context."
+            } else {
+                "${personalContext.contextString} \n Only using the context above, answer the question: ${message.content}"
+            }
+
 
             val antiPrompt = _loadedModel.value?.antiPrompt
             _isGenerating.postValue(true)

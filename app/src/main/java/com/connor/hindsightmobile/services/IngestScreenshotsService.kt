@@ -55,7 +55,7 @@ class IngestScreenshotsService : LifecycleService() {
     private lateinit var dbHelper: DB
     private var stopIngest: Boolean = false
 
-    private val isTest = true
+    private val isTest = false
 
     private lateinit var framesBox: Box<ObjectBoxFrame>
 
@@ -203,7 +203,6 @@ class IngestScreenshotsService : LifecycleService() {
     }
 
     private suspend fun embedScreenshot(frameId: Int, timestamp: Long, frameText: String, sentenceEncoder: SentenceEmbeddingProvider) {
-        Log.d("IngestScreenshotsService", "Embedding for frameId $frameId with text \n $frameText")
         val embedding: FloatArray = sentenceEncoder.encodeText(frameText)
         framesBox.put(ObjectBoxFrame(frameId = frameId, timestamp = timestamp,
             frameText = frameText, embedding = embedding))

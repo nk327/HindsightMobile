@@ -15,12 +15,19 @@ class ContextRetriever(context : Context){
     suspend fun getContext(query: String, n: Int = 5): QueryResults = suspendCoroutine { continuation ->
         CoroutineScope(Dispatchers.IO).launch {
             val queryEmbedding: FloatArray = sentenceEncoder.encodeText(query)
-            val queryResults = framesBox
+            val allQueryResults = framesBox
                 .query(ObjectBoxFrame_.embedding.nearestNeighbors(queryEmbedding, 25))
                 .build()
                 .findWithScores()
+
+            if (allQueryResults.isEmpty()) {
+                continuation.resume(QueryResults("", emptyList()))
+                return@launch
+            }
+
+            val queryResults = allQueryResults
                 .map { Pair(it.score.toFloat(), it.get()) }
-                .subList(0, n)
+                .take(n)
 
             val retrievedContextList = ArrayList<RetrievedContext>()
             var contextString = ""

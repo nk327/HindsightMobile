@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import com.connor.hindsightmobile.obj.OCRResult
+import com.connor.hindsightmobile.ui.elements.AppInfo
 
 class DB private constructor(context: Context, databaseName: String = DATABASE_NAME) :
     SQLiteOpenHelper(context, databaseName, null, DATABASE_VERSION) {
@@ -35,6 +36,11 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
          private const val COLUMN_OCR_RESULT_HEIGHT = "h"
          private const val COLUMN_OCR_RESULT_CONFIDENCE = "confidence"
          private const val COLUMN_OCR_RESULT_BLOCK_NUM = "block_num"
+
+         private const val APPS = "apps"
+         private const val COLUMN_APP_NAME = "name"
+         private const val COLUMN_APP_PACKAGE = "package"
+         private const val COLUMN_RECORD = "record"
 
          @Volatile private var instance: DB? = null
 
@@ -77,9 +83,18 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
             )
         """.trimIndent()
 
+        val createAppsTable = """
+            CREATE TABLE $APPS (
+                $COLUMN_APP_NAME TEXT PRIMARY KEY,
+                $COLUMN_APP_PACKAGE TEXT NOT NULL,
+                $COLUMN_RECORD BOOLEAN NOT NULL DEFAULT TRUE
+            )
+        """.trimIndent()
+
         db.execSQL(createFramesTable)
         db.execSQL(createVideoChunksTable)
         db.execSQL(createOcrResultsTable)
+        db.execSQL(createAppsTable)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -283,5 +298,60 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
             Log.d("DB", "Frame $frameId updated with video chunk $videoChunkId and offset $videoChunkOffset")
         }
         return rowsUpdated
+    }
+
+    fun insertApp(appName: String, appPackage: String, record: Boolean = true): Long {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_APP_NAME, appName)
+            put(COLUMN_APP_PACKAGE, appPackage)
+            put(COLUMN_RECORD, record)
+        }
+
+        val result = db.insertWithOnConflict(APPS, null, values, SQLiteDatabase.CONFLICT_IGNORE)
+
+        if (result == -1L) {
+            Log.e("DB", "Failed to insert app $appName")
+        } else {
+            Log.d("DB", "App $appName inserted successfully with id: $result")
+        }
+        return result
+    }
+
+    fun updateAppRecordStatus(appPackage: String, record: Boolean): Int {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_RECORD, record)
+        }
+
+        val rowsUpdated = db.update(
+            APPS, values, "$COLUMN_APP_PACKAGE = ?", arrayOf(appPackage)
+        )
+
+        if (rowsUpdated == 0) {
+            Log.e("DB", "Failed to update record status for app with package $appPackage")
+        } else {
+            Log.d("DB", "Record status updated for app with package $appPackage")
+        }
+        return rowsUpdated
+    }
+
+    fun getAllApps(): List<AppInfo> {
+        val db = this.readableDatabase
+        val appList = mutableListOf<AppInfo>()
+
+        val query = "SELECT * FROM $APPS"
+        val cursor = db.rawQuery(query, null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                val appName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_NAME))
+                val appPackage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_PACKAGE))
+                val record = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECORD)) == 1
+                appList.add(AppInfo(appPackage, appName, record))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return appList
     }
 }

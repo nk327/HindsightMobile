@@ -136,7 +136,7 @@ abstract class RecorderService : LifecycleService() {
             NotificationHelper.RECORDING_NOTIFICATION_CHANNEL
         )
             .setContentTitle(notificationTitle)
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(R.drawable.ic_stat_hourglass_empty)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setSilent(true)
             .setOngoing(recorderState == RecorderState.ACTIVE)
