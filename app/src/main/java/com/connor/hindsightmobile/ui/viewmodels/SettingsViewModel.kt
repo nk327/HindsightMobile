@@ -11,6 +11,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.connor.hindsightmobile.models.RecorderModel
 import com.connor.hindsightmobile.services.BackgroundRecorderService
+import com.connor.hindsightmobile.ui.viewmodels.ManageRecordingsViewModel
 import com.connor.hindsightmobile.utils.Preferences
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,11 @@ class SettingsViewModel(val app: Application) : AndroidViewModel(app) {
         Preferences.prefs.getBoolean(Preferences.screenrecordingenabled, false)
     )
     val screenRecordingEnabled = _screenRecordingEnabled.asStateFlow()
+
+    private val _defaultRecordApps = MutableStateFlow(
+        Preferences.prefs.getBoolean(Preferences.defaultrecordapps, false)
+    )
+    val defaultRecordApps = _defaultRecordApps.asStateFlow()
 
     private val _autoIngestEnabled = MutableStateFlow(
         Preferences.prefs.getBoolean(Preferences.autoingestenabled, false)
@@ -89,6 +95,15 @@ class SettingsViewModel(val app: Application) : AndroidViewModel(app) {
                 _eventChannel.send(UIEvent.StopScreenRecording)
             }
         }
+    }
+
+    fun toggleDefaultRecordApps() {
+        _defaultRecordApps.value = !_defaultRecordApps.value
+        Preferences.prefs.edit().putBoolean(Preferences.defaultrecordapps, _defaultRecordApps.value)
+            .apply()
+
+        val intent = Intent(ManageRecordingsViewModel.RECORDING_SETTTINGS_UPDATED)
+        getApplication<Application>().sendBroadcast(intent)
     }
 
     fun toggleAutoIngest() {

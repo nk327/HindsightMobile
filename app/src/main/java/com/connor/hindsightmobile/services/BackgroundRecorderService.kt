@@ -1,7 +1,12 @@
 package com.connor.hindsightmobile.services
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Application
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
@@ -17,6 +22,8 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Display
 import androidx.activity.result.ActivityResult
+import androidx.core.content.ContextCompat
+import com.connor.hindsightmobile.DB
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -25,6 +32,7 @@ import com.connor.hindsightmobile.R
 import com.connor.hindsightmobile.enums.RecorderState
 import com.connor.hindsightmobile.obj.ImageResolution
 import com.connor.hindsightmobile.obj.UserActivityState
+import com.connor.hindsightmobile.ui.viewmodels.ManageRecordingsViewModel
 import com.connor.hindsightmobile.utils.Preferences
 import com.connor.hindsightmobile.utils.getUnprocessedScreenshotsDirectory
 
@@ -48,6 +56,13 @@ class BackgroundRecorderService : RecorderService() {
     )
     private var screenshotApplication: String? = null
 
+    private lateinit var dbHelper: DB
+    private lateinit var appPackageToRecord: Map<String, Boolean>
+    private var defaultRecordApps: Boolean = Preferences.prefs.getBoolean(
+        Preferences.defaultrecordapps,
+        false
+    )
+
     override val fgServiceType: Int?
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
@@ -55,12 +70,43 @@ class BackgroundRecorderService : RecorderService() {
             null
         }
 
+    private val backgroundRecorderBroadcastReceiver = object : BroadcastReceiver() {
+        @SuppressLint("NewApi")
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                ManageRecordingsViewModel.RECORDING_SETTTINGS_UPDATED -> {
+                    appPackageToRecord = dbHelper.getAppPackageToRecordMap()
+                    defaultRecordApps = Preferences.prefs.getBoolean(
+                        Preferences.defaultrecordapps,
+                        false
+                    )
+                    Log.d("BackgroundRecorderService", "RECORDING_SETTTINGS_UPDATED")
+                }
+            }
+        }
+    }
+
     fun prepare(data: ActivityResult) {
         this.activityResult = data
         initMediaProjection()
     }
 
     override fun onCreate() {
+        dbHelper = DB.getInstance(this@BackgroundRecorderService)
+        appPackageToRecord = dbHelper.getAppPackageToRecordMap()
+
+        runCatching {
+            unregisterReceiver(backgroundRecorderBroadcastReceiver)
+        }
+        val intentFilter = IntentFilter().apply {
+            addAction(ManageRecordingsViewModel.RECORDING_SETTTINGS_UPDATED)
+        }
+        ContextCompat.registerReceiver(
+            this,
+            backgroundRecorderBroadcastReceiver,
+            intentFilter,
+            ContextCompat.RECEIVER_EXPORTED
+        )
         super.onCreate()
     }
 
@@ -139,8 +185,18 @@ class BackgroundRecorderService : RecorderService() {
                         postRecorderLoop(this)
                         return
                     }
-                    val image = imageReader!!.acquireLatestImage()
                     screenshotApplication = UserActivityState.currentApplication
+                    if (appPackageToRecord[screenshotApplication] == false ||
+                        (!appPackageToRecord.containsKey(screenshotApplication) && !defaultRecordApps)) {
+                        Log.d(
+                            "BackgroundRecorderService",
+                            "Not recording $screenshotApplication"
+                        )
+                        postRecorderLoop(this)
+                        return
+                    }
+
+                    val image = imageReader!!.acquireLatestImage()
                     Log.d("BackgroundRecorderService", "Image Acquired")
                     image?.let {
                         val buffer = it.planes[0].buffer
@@ -178,7 +234,8 @@ class BackgroundRecorderService : RecorderService() {
         // Use the app's private storage directory
         val directory = getUnprocessedScreenshotsDirectory(context)
 
-        val file = File(directory, "${imageApplication}_${System.currentTimeMillis()}.webp")
+        val imageApplicationDashes = imageApplication?.replace(".", "-")
+        val file = File(directory, "${imageApplicationDashes}_${System.currentTimeMillis()}.webp")
         try {
             FileOutputStream(file).use { fos ->
                 bitmap.compress(Bitmap.CompressFormat.WEBP, 100, fos)
@@ -212,6 +269,9 @@ class BackgroundRecorderService : RecorderService() {
         imageReader?.close()
         virtualDisplay?.release()
         mediaProjection?.stop() // This will trigger the callback's onStop method
+        runCatching {
+            unregisterReceiver(backgroundRecorderBroadcastReceiver)
+        }
         super.onDestroy()
     }
 
@@ -225,6 +285,6 @@ class BackgroundRecorderService : RecorderService() {
 
     companion object {
         var isRunning = false
-        const val SCREEN_RECORDER_STOPPED = "com.connor.hindsight.SCREEN_RECORDER_STOPPED"
+        const val SCREEN_RECORDER_STOPPED = "com.connor.hindsightmobile.SCREEN_RECORDER_STOPPED"
     }
 }

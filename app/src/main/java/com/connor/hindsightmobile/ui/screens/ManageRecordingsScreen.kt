@@ -1,5 +1,6 @@
 package com.connor.hindsightmobile.ui.screens
 
+import android.app.Application
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,12 +22,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import com.connor.hindsightmobile.ui.viewmodels.ManageRecordingsViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 
 
 @Composable
 fun ManageRecordingsScreen(
-    viewModel: ManageRecordingsViewModel = viewModel()
+    navController: NavController,
 ) {
+    val viewModel: ManageRecordingsViewModel = viewModel()
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text(
             text = "Manage App Recording",
@@ -38,8 +42,8 @@ fun ManageRecordingsScreen(
             items(viewModel.appList) { app ->
                 AppItem(
                     app = app,
-                    onAppSelected = { selectedApp, isSelected ->
-                        viewModel.toggleAppSelection(selectedApp, isSelected)
+                    onAppSelected = { selectedApp ->
+                        viewModel.toggleAppIsRecording(selectedApp)
                     },
                     onDeleteAppData = { selectedApp ->
                         viewModel.deleteAppData(selectedApp)
@@ -50,10 +54,3 @@ fun ManageRecordingsScreen(
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun AppSelectionScreenPreview() {
-    val viewModel = ManageRecordingsViewModel()
-    ManageRecordingsScreen(viewModel = viewModel)
-}

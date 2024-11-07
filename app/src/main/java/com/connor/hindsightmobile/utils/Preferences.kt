@@ -13,6 +13,7 @@ object Preferences {
     const val autoingesttime = "AutoIngestTime"
     const val audoingestinterval = "AutoIngestInterval"
     const val defaultllmname = "DefaultLLMName"
+    const val defaultrecordapps = "DefaultRecordApps"
 
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
@@ -31,6 +32,10 @@ object Preferences {
 
         if (!prefs.contains(autoingesttime)) {
             prefs.edit().putInt(autoingesttime, 2).apply()
+        }
+
+        if (!prefs.contains(defaultrecordapps)) {
+            prefs.edit().putBoolean(defaultrecordapps, false).apply()
         }
     }
 }

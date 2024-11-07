@@ -19,32 +19,39 @@ import androidx.compose.ui.unit.dp
 data class AppInfo(
     val packageName: String,
     val appName: String,
-    var isSelected: Boolean = false
+    var isRecording: Boolean = false,
+    var numFrames: Int = 0,
 )
 
 @Composable
 fun AppItem(
     app: AppInfo,
-    onAppSelected: (AppInfo, Boolean) -> Unit,
+    onAppSelected: (AppInfo) -> Unit,
     onDeleteAppData: (AppInfo) -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(8.dp))
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = app.appName, style = MaterialTheme.typography.bodyMedium)
+            Text(text = app.appName, style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = "${app.numFrames} frames", style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
         Checkbox(
-            checked = app.isSelected,
-            onCheckedChange = { isChecked ->
-                onAppSelected(app, isChecked)
+            checked = app.isRecording,
+            onCheckedChange = {
+                onAppSelected(app)
             }
         )
 

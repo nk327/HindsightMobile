@@ -243,10 +243,10 @@ abstract class RecorderService : LifecycleService() {
     }
 
     companion object {
-        const val RECORDER_INTENT_ACTION = "com.connor.hindsight.RECORDER_ACTION"
+        const val RECORDER_INTENT_ACTION = "com.connor.hindsightmobile.RECORDER_ACTION"
         const val ACTION_EXTRA_KEY = "action"
         const val STOP_ACTION = "STOP"
         const val PAUSE_RESUME_ACTION = "PR"
-        const val FROM_RECORDER_SERVICE = "com.connor.hindsight.FROM_RECORDER_SERVICE"
+        const val FROM_RECORDER_SERVICE = "com.connor.hindsightmobile.FROM_RECORDER_SERVICE"
     }
 }

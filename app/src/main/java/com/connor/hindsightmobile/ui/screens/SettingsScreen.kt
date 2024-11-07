@@ -48,6 +48,7 @@ fun SettingsScreen(navController: NavController,
         modifier = Modifier.padding(top = 16.dp)
     ) {
         val screenRecordingEnabled = settingsViewModel.screenRecordingEnabled.collectAsState()
+        val defaultRecordApps = settingsViewModel.defaultRecordApps.collectAsState()
         val autoIngestEnabled = settingsViewModel.autoIngestEnabled.collectAsState()
         val autoIngestTime = settingsViewModel.autoIngestTime.collectAsState()
 
@@ -90,6 +91,23 @@ fun SettingsScreen(navController: NavController,
             label = { Text("Hour to Auto Ingest (military time)") },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
         )
+        ToggleButton(
+            checked = defaultRecordApps.value,
+            text = "Record New Apps By Default",
+            onToggleOn = settingsViewModel::toggleDefaultRecordApps,
+            onToggleOff = settingsViewModel::toggleDefaultRecordApps,
+            onClickSettings = { /* Open settings for keystroke tracking */ }
+        )
+        Button(
+            onClick = {navController.navigate("manageRecordings")},
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .padding(
+                    16.dp
+                )
+        ) {
+            Text("Manage Recordings")
+        }
         Button(
             onClick = {navController.navigate("chat")},
             modifier = Modifier

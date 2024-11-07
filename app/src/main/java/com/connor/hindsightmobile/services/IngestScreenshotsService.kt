@@ -145,15 +145,22 @@ class IngestScreenshotsService : LifecycleService() {
 
     private fun ingestScreenshotsIntoFrames(screenshotFiles: List<File>){
         screenshotFiles.forEach{ file ->
-            val (fileApplication, fileTimestamp) = parseScreenshotFilePath(file.name)
-            if (fileTimestamp != null) {
-                dbHelper.insertFrame(fileTimestamp, fileApplication, null,
-                    null)
+            if (file.length() > 0) {
+                val (fileApplication, fileTimestamp) = parseScreenshotFilePath(file.name)
+                if (fileTimestamp != null) {
+                    dbHelper.insertFrame(
+                        fileTimestamp, fileApplication, null,
+                        null
+                    )
+                }
+            } else {
+                file.delete()
             }
         }
     }
 
     private suspend fun runOCR(screenshotFile: File, frameId: Int, recognition: TextRecognizer) {
+        Log.d("IngestScreenshotsService", "Running OCR on Screenshot: $screenshotFile")
         val image = InputImage.fromFilePath(this, screenshotFile.toUri())
         try {
             val ocrResult = recognition.process(image).await()
@@ -189,7 +196,8 @@ class IngestScreenshotsService : LifecycleService() {
             val frameId = frame[DB.COLUMN_ID] as Int
             val timestamp = frame[DB.COLUMN_TIMESTAMP] as Long
             val application = frame[DB.COLUMN_APPLICATION] as String?
-            val screenshotFile = File(unprocessedScreenshotsDirectory, "${application}_${timestamp}.webp")
+            val applicationDashes = application?.replace(".", "-")
+            val screenshotFile = File(unprocessedScreenshotsDirectory, "${applicationDashes}_${timestamp}.webp")
 
             if (screenshotFile.exists()) {
                 try {
@@ -391,11 +399,11 @@ class IngestScreenshotsService : LifecycleService() {
     }
 
     companion object {
-        const val INGEST_SCREENSHOTS_INTENT_ACTION = "com.connor.hindsight.INGEST_SCREENSHOTS_ACTION"
+        const val INGEST_SCREENSHOTS_INTENT_ACTION = "com.connor.hindsightmobile.INGEST_SCREENSHOTS_ACTION"
         const val ACTION_EXTRA_KEY = "action"
         const val STOP_ACTION = "STOP"
-        const val INGEST_SCREENSHOTS_FINISHED = "com.connor.hindsight.INGEST_SCREENSHOTS_FINISHED"
-        const val INGEST_SCREENSHOTS_STARTED = "com.connor.hindsight.INGEST_SCREENSHOTS_STARTED"
+        const val INGEST_SCREENSHOTS_FINISHED = "com.connor.hindsightmobile.INGEST_SCREENSHOTS_FINISHED"
+        const val INGEST_SCREENSHOTS_STARTED = "com.connor.hindsightmobile.INGEST_SCREENSHOTS_STARTED"
         var isRunning = false
     }
 }

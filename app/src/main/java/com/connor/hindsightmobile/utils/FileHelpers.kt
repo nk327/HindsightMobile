@@ -25,7 +25,7 @@ fun parseScreenshotFilePath(filePath: String): Pair<String?, Long?> {
     val parts = fileName.removeSuffix(".webp").split("_")
 
     return if (parts.size == 2) {
-        val application = parts[0]
+        val application = parts[0].replace("-", ".")
         val timestamp = parts[1].toLongOrNull()
         Pair(application, timestamp)
     } else {

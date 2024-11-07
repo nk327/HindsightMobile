@@ -13,7 +13,7 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
 
      companion object {
          private const val DATABASE_NAME = "hindsight.db"
-         private const val DATABASE_VERSION = 1
+         private const val DATABASE_VERSION = 4
 
          private const val TABLE_FRAMES = "frames"
          const val COLUMN_ID = "id"
@@ -26,7 +26,7 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
          private const val COLUMN_VIDEO_CHUNK_ID = "id"
          private const val COLUMN_VIDEO_CHUNK_PATH = "path"
 
-         private const val OCR_RESULTS = "ocr_results"
+         private const val TABLE_OCR_RESULTS = "ocr_results"
          private const val COLUMN_OCR_RESULT_ID = "id"
          private const val COLUMN_OCR_RESULT_FRAME_ID = "frame_id"
          private const val COLUMN_OCR_RESULT_TEXT = "text"
@@ -37,7 +37,7 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
          private const val COLUMN_OCR_RESULT_CONFIDENCE = "confidence"
          private const val COLUMN_OCR_RESULT_BLOCK_NUM = "block_num"
 
-         private const val APPS = "apps"
+         private const val TABLE_APPS = "apps"
          private const val COLUMN_APP_NAME = "name"
          private const val COLUMN_APP_PACKAGE = "package"
          private const val COLUMN_RECORD = "record"
@@ -52,7 +52,7 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
 
     override fun onCreate(db: SQLiteDatabase) {
         val createFramesTable = """
-        CREATE TABLE $TABLE_FRAMES (
+        CREATE TABLE IF NOT EXISTS $TABLE_FRAMES (
             $COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
             $COLUMN_TIMESTAMP INTEGER NOT NULL,
             $COLUMN_APPLICATION TEXT,
@@ -63,14 +63,14 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
         """.trimIndent()
 
         val createVideoChunksTable = """
-            CREATE TABLE $TABLE_VIDEO_CHUNKS (
+            CREATE TABLE IF NOT EXISTS $TABLE_VIDEO_CHUNKS (
                 $COLUMN_VIDEO_CHUNK_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 $COLUMN_VIDEO_CHUNK_PATH TEXT NOT NULL
             )
         """.trimIndent()
 
         val createOcrResultsTable = """
-            CREATE TABLE $OCR_RESULTS (
+            CREATE TABLE IF NOT EXISTS $TABLE_OCR_RESULTS (
                 $COLUMN_OCR_RESULT_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 $COLUMN_OCR_RESULT_FRAME_ID INTEGER NOT NULL,
                 $COLUMN_OCR_RESULT_TEXT TEXT,
@@ -84,9 +84,9 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
         """.trimIndent()
 
         val createAppsTable = """
-            CREATE TABLE $APPS (
-                $COLUMN_APP_NAME TEXT PRIMARY KEY,
-                $COLUMN_APP_PACKAGE TEXT NOT NULL,
+            CREATE TABLE IF NOT EXISTS $TABLE_APPS (
+                $COLUMN_APP_PACKAGE TEXT NOT NULL PRIMARY KEY,
+                $COLUMN_APP_NAME TEXT,
                 $COLUMN_RECORD BOOLEAN NOT NULL DEFAULT TRUE
             )
         """.trimIndent()
@@ -98,6 +98,10 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_FRAMES")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_VIDEO_CHUNKS")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_OCR_RESULTS")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_APPS")
         onCreate(db)
     }
 
@@ -156,7 +160,7 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
                     put(COLUMN_OCR_RESULT_CONFIDENCE, result.confidence)
                     put(COLUMN_OCR_RESULT_BLOCK_NUM, result.blockNum)
                 }
-                db.insert(OCR_RESULTS, null, values)
+                db.insert(TABLE_OCR_RESULTS, null, values)
             }
             db.setTransactionSuccessful()
             Log.d("DB", "Inserted ${results.size} OCR results for frameId $frameId")
@@ -176,7 +180,7 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
         val query = """
             SELECT f.$COLUMN_ID, f.$COLUMN_TIMESTAMP, f.$COLUMN_APPLICATION, f.$COLUMN_VIDEO_CHUNK, f.$COLUMN_VIDEO_CHUNK_OFFSET
             FROM $TABLE_FRAMES f
-            LEFT JOIN $OCR_RESULTS o ON f.$COLUMN_ID = o.$COLUMN_OCR_RESULT_FRAME_ID
+            LEFT JOIN $TABLE_OCR_RESULTS o ON f.$COLUMN_ID = o.$COLUMN_OCR_RESULT_FRAME_ID
             WHERE o.$COLUMN_OCR_RESULT_FRAME_ID IS NULL
         """.trimIndent()
 
@@ -212,7 +216,7 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
                o.$COLUMN_OCR_RESULT_WIDTH, o.$COLUMN_OCR_RESULT_HEIGHT, 
                o.$COLUMN_OCR_RESULT_CONFIDENCE, o.$COLUMN_OCR_RESULT_BLOCK_NUM
         FROM $TABLE_FRAMES f
-        INNER JOIN $OCR_RESULTS o ON f.$COLUMN_ID = o.$COLUMN_OCR_RESULT_FRAME_ID
+        INNER JOIN $TABLE_OCR_RESULTS o ON f.$COLUMN_ID = o.$COLUMN_OCR_RESULT_FRAME_ID
         WHERE o.$COLUMN_OCR_RESULT_TEXT IS NOT NULL
         AND f.$COLUMN_ID NOT IN ($ingestedFrameIdsString)
     """.trimIndent()
@@ -300,15 +304,15 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
         return rowsUpdated
     }
 
-    fun insertApp(appName: String, appPackage: String, record: Boolean = true): Long {
+    fun insertApp(appPackage: String, appName: String?, record: Boolean = true): Long {
         val db = this.writableDatabase
         val values = ContentValues().apply {
-            put(COLUMN_APP_NAME, appName)
             put(COLUMN_APP_PACKAGE, appPackage)
+            put(COLUMN_APP_NAME, appName)
             put(COLUMN_RECORD, record)
         }
 
-        val result = db.insertWithOnConflict(APPS, null, values, SQLiteDatabase.CONFLICT_IGNORE)
+        val result = db.insertWithOnConflict(TABLE_APPS, null, values, SQLiteDatabase.CONFLICT_IGNORE)
 
         if (result == -1L) {
             Log.e("DB", "Failed to insert app $appName")
@@ -325,7 +329,7 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
         }
 
         val rowsUpdated = db.update(
-            APPS, values, "$COLUMN_APP_PACKAGE = ?", arrayOf(appPackage)
+            TABLE_APPS, values, "$COLUMN_APP_PACKAGE = ?", arrayOf(appPackage)
         )
 
         if (rowsUpdated == 0) {
@@ -340,18 +344,70 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
         val db = this.readableDatabase
         val appList = mutableListOf<AppInfo>()
 
-        val query = "SELECT * FROM $APPS"
+        val query = """
+            SELECT a.$COLUMN_APP_NAME, a.$COLUMN_APP_PACKAGE, a.$COLUMN_RECORD, 
+                   COUNT(f.$COLUMN_ID) AS num_frames
+            FROM $TABLE_APPS a
+            LEFT JOIN $TABLE_FRAMES f ON a.$COLUMN_APP_PACKAGE = f.$COLUMN_APPLICATION
+            GROUP BY a.$COLUMN_APP_NAME, a.$COLUMN_APP_PACKAGE, a.$COLUMN_RECORD
+        """.trimIndent()
+
         val cursor = db.rawQuery(query, null)
 
         if (cursor.moveToFirst()) {
             do {
-                val appName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_NAME))
                 val appPackage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_PACKAGE))
+                val appName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_NAME))
                 val record = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECORD)) == 1
-                appList.add(AppInfo(appPackage, appName, record))
+                val numFrames = cursor.getInt(cursor.getColumnIndexOrThrow("num_frames"))
+
+                appList.add(AppInfo(appPackage, appName ?: appPackage, record, numFrames))
             } while (cursor.moveToNext())
         }
         cursor.close()
         return appList
     }
+
+    fun getAppPackages(record: Boolean? = null): HashSet<String> {
+        val db = this.readableDatabase
+        val appPackages = HashSet<String>()
+
+        val query = when (record) {
+            true -> "SELECT $COLUMN_APP_PACKAGE FROM $TABLE_APPS WHERE $COLUMN_RECORD = 1"
+            false -> "SELECT $COLUMN_APP_PACKAGE FROM $TABLE_APPS WHERE $COLUMN_RECORD = 0"
+            else -> "SELECT $COLUMN_APP_PACKAGE FROM $TABLE_APPS" // Return all if record is null
+        }
+
+        val cursor = db.rawQuery(query, null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                val appPackage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_PACKAGE))
+                appPackages.add(appPackage)
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+
+        return appPackages
+    }
+
+    fun getAppPackageToRecordMap(): Map<String, Boolean> {
+        val db = this.readableDatabase
+        val appPackageToRecordMap = mutableMapOf<String, Boolean>()
+
+        val query = "SELECT $COLUMN_APP_PACKAGE, $COLUMN_RECORD FROM $TABLE_APPS"
+        val cursor = db.rawQuery(query, null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                val appPackage = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_PACKAGE))
+                val record = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECORD)) == 1
+                appPackageToRecordMap[appPackage] = record
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+
+        return appPackageToRecordMap
+    }
+
 }
