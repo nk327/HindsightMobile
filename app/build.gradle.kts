@@ -117,6 +117,8 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.1")
 
+    implementation("com.github.jeziellago:compose-markdown:0.3.4")
+
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.annotations)

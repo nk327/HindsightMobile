@@ -41,11 +41,11 @@ fun ToggleButton(
                 }
             }
         )
-        IconButton(onClick = onClickSettings) {
-            Icon(
-                imageVector = Icons.Filled.Settings,
-                contentDescription = "Settings"
-            )
-        }
+//        IconButton(onClick = onClickSettings) {
+//            Icon(
+//                imageVector = Icons.Filled.Settings,
+//                contentDescription = "Settings"
+//            )
+//        }
     }
 }
