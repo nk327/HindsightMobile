@@ -4,6 +4,12 @@
 * Use Objectbox for RAG
 * Pass to LLM running locally using llamacpp
 
+# Installation
+1. `git clone --recursive git@github.com:cparish312/HindsightMobile.git`
+2. Open the Project in Android Studio
+3. Connect your Android Device
+4. Run the application using `Run` > `Run 'app'` or the play button in Android Studio
+
 # Settings
 * `Chat`: go to chat
 * `Ingest Screenshots`: runs a manual ingestion of screenshots
@@ -19,3 +25,7 @@
 * `Auto Ingest`: Auto Run Ingestion at 
 * `Hour to Auto Ingest (Military Time)`
   * Default is 2 am
+
+# Shoutouts
+* [LMPlayground](https://github.com/andriydruk/LMPlayground/tree/main)
+* [Android-Document-QA](https://github.com/shubham0204/Android-Document-QA/tree/main)
