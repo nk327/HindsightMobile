@@ -98,10 +98,10 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_FRAMES")
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_VIDEO_CHUNKS")
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_OCR_RESULTS")
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_APPS")
+//        db.execSQL("DROP TABLE IF EXISTS $TABLE_FRAMES")
+//        db.execSQL("DROP TABLE IF EXISTS $TABLE_VIDEO_CHUNKS")
+//        db.execSQL("DROP TABLE IF EXISTS $TABLE_OCR_RESULTS")
+//        db.execSQL("DROP TABLE IF EXISTS $TABLE_APPS")
         onCreate(db)
     }
 
