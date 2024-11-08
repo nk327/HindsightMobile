@@ -40,8 +40,11 @@ fun AppItem(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = app.appName, style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
         }
+
+        Spacer(modifier = Modifier.width(16.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(text = "${app.numFrames} frames", style = MaterialTheme.typography.bodyMedium,
