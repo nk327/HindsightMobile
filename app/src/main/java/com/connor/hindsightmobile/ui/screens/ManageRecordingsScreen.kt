@@ -17,12 +17,16 @@ import androidx.compose.ui.Modifier
 import com.connor.hindsightmobile.ui.elements.AppItem
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import com.connor.hindsightmobile.ui.viewmodels.ManageRecordingsViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.connor.hindsightmobile.ui.elements.DeleteConfirmationDialog
 
 
 @Composable
@@ -30,6 +34,8 @@ fun ManageRecordingsScreen(
     navController: NavController,
 ) {
     val viewModel: ManageRecordingsViewModel = viewModel()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var appToDelete by remember { mutableStateOf<AppInfo?>(null) }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text(
@@ -46,10 +52,25 @@ fun ManageRecordingsScreen(
                         viewModel.toggleAppIsRecording(selectedApp)
                     },
                     onDeleteAppData = { selectedApp ->
-                        viewModel.deleteAppData(selectedApp)
+                        appToDelete = selectedApp
+                        showDeleteDialog = true
                     }
                 )
             }
+        }
+        if (showDeleteDialog && appToDelete != null) {
+            DeleteConfirmationDialog(
+                app = appToDelete!!,
+                onConfirm = {
+                    viewModel.deleteAppData(appToDelete!!)
+                    showDeleteDialog = false
+                    appToDelete = null
+                },
+                onDismiss = {
+                    showDeleteDialog = false
+                    appToDelete = null
+                }
+            )
         }
     }
 }

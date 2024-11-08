@@ -13,6 +13,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.connor.hindsightmobile.DB
 import com.connor.hindsightmobile.ui.elements.AppInfo
+import com.connor.hindsightmobile.utils.deleteAppData
 import kotlinx.coroutines.launch
 
 class ManageRecordingsViewModel(val app: Application): AndroidViewModel(app) {
@@ -47,7 +48,7 @@ class ManageRecordingsViewModel(val app: Application): AndroidViewModel(app) {
 
     // Deletes data for a specific app
     fun deleteAppData(app: AppInfo) {
-        // appList = appList.filter { it.packageName != app.packageName }
+        deleteAppData(app, getApplication(), dbHelper)
     }
 
     // Deletes data for all selected apps

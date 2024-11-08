@@ -124,6 +124,9 @@ fun scheduleIngestAlarm(context: Context) {
         set(Calendar.HOUR_OF_DAY, autoIngestTime)
         set(Calendar.MINUTE, 0)
         set(Calendar.SECOND, 0)
+        if (before(Calendar.getInstance())) {
+            add(Calendar.DAY_OF_MONTH, 1) // Set for the next day if time has passed
+        }
     }
 
     alarmManager.setRepeating(

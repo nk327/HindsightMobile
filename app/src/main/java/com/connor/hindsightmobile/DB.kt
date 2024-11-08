@@ -412,4 +412,33 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
         return appPackageToRecordMap
     }
 
+    fun deleteAllDBDataForApp(appPackage: String) {
+        val db = this.writableDatabase
+        db.beginTransaction()
+        try {
+            val frameIds = mutableListOf<Int>()
+            val frameQuery = "SELECT $COLUMN_ID FROM $TABLE_FRAMES WHERE $COLUMN_APPLICATION = ?"
+            val frameCursor = db.rawQuery(frameQuery, arrayOf(appPackage))
+            while (frameCursor.moveToNext()) {
+                frameIds.add(frameCursor.getInt(frameCursor.getColumnIndexOrThrow(COLUMN_ID)))
+            }
+            frameCursor.close()
+
+            for (frameId in frameIds) {
+                db.delete(TABLE_OCR_RESULTS, "$COLUMN_OCR_RESULT_FRAME_ID = ?", arrayOf(frameId.toString()))
+            }
+
+            db.delete(TABLE_FRAMES, "$COLUMN_APPLICATION = ?", arrayOf(appPackage))
+
+            val applicationDashes = appPackage.replace(".", "-")
+            db.delete(TABLE_VIDEO_CHUNKS, "$COLUMN_VIDEO_CHUNK_PATH LIKE ?", arrayOf("%$applicationDashes%"))
+
+            db.setTransactionSuccessful()
+            Log.d("DB", "Successfully deleted all data for app package: $appPackage")
+        } catch (e: Exception) {
+            Log.e("DB", "Failed to delete data for app package: $appPackage", e)
+        } finally {
+            db.endTransaction()
+        }
+    }
 }

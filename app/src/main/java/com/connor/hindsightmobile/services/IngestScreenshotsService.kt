@@ -316,7 +316,8 @@ class IngestScreenshotsService : LifecycleService() {
                     timestamp ?: 0L
                 }
 
-                val videoFile = File(videoFilesDirectory, "${application}_$date.mp4")
+                val applicationDashes = application?.replace(".", "-")
+                val videoFile = File(videoFilesDirectory, "${applicationDashes}_$date.mp4")
                 createVideoFromScreenshots(sortedScreenshots, videoFile)
             }
         }

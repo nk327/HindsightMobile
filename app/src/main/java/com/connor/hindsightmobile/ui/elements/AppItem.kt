@@ -38,6 +38,15 @@ fun AppItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        Checkbox(
+            checked = app.isRecording,
+            onCheckedChange = {
+                onAppSelected(app)
+            }
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
         Column(modifier = Modifier.weight(1f)) {
             Text(text = app.appName, style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -50,13 +59,6 @@ fun AppItem(
             Text(text = "${app.numFrames} frames", style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-
-        Checkbox(
-            checked = app.isRecording,
-            onCheckedChange = {
-                onAppSelected(app)
-            }
-        )
 
         IconButton(onClick = { onDeleteAppData(app) }) {
             Icon(
