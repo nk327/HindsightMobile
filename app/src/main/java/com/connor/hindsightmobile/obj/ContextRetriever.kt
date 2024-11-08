@@ -2,6 +2,7 @@ package com.connor.hindsightmobile.obj
 
 import android.content.Context
 import com.connor.hindsightmobile.embeddings.SentenceEmbeddingProvider
+import com.connor.hindsightmobile.utils.convertToLocalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,7 +17,9 @@ class ContextRetriever(context : Context){
         CoroutineScope(Dispatchers.IO).launch {
             val queryEmbedding: FloatArray = sentenceEncoder.encodeText(query)
             val allQueryResults = framesBox
-                .query(ObjectBoxFrame_.embedding.nearestNeighbors(queryEmbedding, 25))
+                .query(ObjectBoxFrame_.embedding.nearestNeighbors(queryEmbedding, 25)
+                    .and(ObjectBoxFrame_.application.notEqual("com.connor.hindsightmobile"))
+                )
                 .build()
                 .findWithScores()
 
@@ -27,13 +30,16 @@ class ContextRetriever(context : Context){
 
             val queryResults = allQueryResults
                 .map { Pair(it.score.toFloat(), it.get()) }
+                .sortedBy { it.second.timestamp }
                 .take(n)
 
             val retrievedContextList = ArrayList<RetrievedContext>()
             var contextString = ""
             queryResults.forEach { (score, frame) ->
                 retrievedContextList.add(RetrievedContext(frame.frameId, frame.frameText.toString()))
-                contextString += frame.frameText.toString()
+                val localTime = convertToLocalTime(frame.timestamp)
+                contextString += "Text from Screenshot of ${frame.application} at ${localTime}\n"
+                contextString += frame.frameText.toString() + "\n\n"
             }
 
             continuation.resume(QueryResults(contextString, retrievedContextList))
