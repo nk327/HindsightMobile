@@ -25,7 +25,8 @@ private val ChatBubbleShape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 20.dp)
 @Composable
 fun ChatItemBubble(
     message: Message,
-    isUserMe: Boolean
+    isUserMe: Boolean,
+    modifier: Modifier = Modifier
 ) {
 
     val backgroundBubbleColor = if (isUserMe) {
@@ -44,6 +45,7 @@ fun ChatItemBubble(
             SelectionContainer {
                 Text(
                     text = styledMessage,
+                    modifier = modifier,
                     style = MaterialTheme.typography.bodyLarge.copy(color = LocalContentColor.current)
                 )
             }

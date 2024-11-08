@@ -138,6 +138,9 @@ fun ConversationScreen(navController: NavController, viewModel: ConversationView
                 Messages(
                     messages = messages,
                     navigateToProfile = { },
+                    showAssistantPrompt = { message ->
+                        navController.navigateToAssistantPrompt(message)
+                    },
                     modifier = Modifier.weight(1f),
                     scrollState = scrollState
                 )

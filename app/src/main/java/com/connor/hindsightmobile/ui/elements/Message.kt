@@ -25,6 +25,7 @@ import com.connor.hindsightmobile.ui.viewmodels.Message
 @Composable
 fun Message(
     onAuthorClick: (String) -> Unit,
+    onMessageClick: (String) -> Unit,
     msg: Message,
     isUserMe: Boolean,
     isFirstMessageByAuthor: Boolean,
@@ -60,7 +61,9 @@ fun Message(
                     )
                 }
             }
-            ChatItemBubble(msg, isUserMe)
+            ChatItemBubble(msg,
+                isUserMe,
+                modifier = Modifier.clickable { msg.prompt?.let { onMessageClick(it) } })
             if (isFirstMessageByAuthor) {
                 // Last bubble before next author
                 Spacer(modifier = Modifier.height(8.dp))

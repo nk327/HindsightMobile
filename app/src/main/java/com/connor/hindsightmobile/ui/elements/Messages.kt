@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 fun Messages(
     messages: List<Message>,
     navigateToProfile: (String) -> Unit,
+    showAssistantPrompt: (String) -> Unit,
     scrollState: LazyListState,
     modifier: Modifier = Modifier
 ) {
@@ -38,6 +39,7 @@ fun Messages(
                 item {
                     Message(
                         onAuthorClick = { name -> navigateToProfile(name) },
+                        onMessageClick = { prompt -> showAssistantPrompt(prompt)},
                         msg = content,
                         isUserMe = content.author == authorMe,
                         isFirstMessageByAuthor = true,

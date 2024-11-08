@@ -191,7 +191,7 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
         uiState.addMessage(
             Message(
                 "Assistant",
-                ""
+                "",
             )
         )
 
@@ -208,7 +208,7 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
             } else {
                 "${personalContext.contextString} \n Only using the context above, answer the question: ${message.content}"
             }
-
+            uiState.addPromptToLastMessage(messageWithContext)
 
             val antiPrompt = _loadedModel.value?.antiPrompt
             _isGenerating.postValue(true)

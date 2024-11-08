@@ -19,6 +19,11 @@ class ConversationUiState(
         _messages[_messages.size - 1] = message.copy(content = msg)
     }
 
+    fun addPromptToLastMessage(prompt: String) {
+        val message = _messages.last()
+        _messages[_messages.size - 1] = message.copy(prompt = prompt)
+    }
+
     fun resetMessages() {
         _messages.clear()
     }
@@ -29,6 +34,7 @@ data class Message(
     val author: String,
     val content: String,
     val image: Int? = null,
+    val prompt: String? = null,
     val authorImage: Int = if (author == "User")
         R.drawable.ic_baseline_person
     else
