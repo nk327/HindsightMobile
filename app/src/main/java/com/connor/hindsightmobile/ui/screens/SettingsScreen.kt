@@ -57,85 +57,80 @@ fun SettingsScreen(navController: NavController,
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .padding(top = 16.dp)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            val screenRecordingEnabled = settingsViewModel.screenRecordingEnabled.collectAsState()
-            val isIngesting = settingsViewModel.isIngesting.collectAsState()
-            val defaultRecordApps = settingsViewModel.defaultRecordApps.collectAsState()
-            val autoIngestEnabled = settingsViewModel.autoIngestEnabled.collectAsState()
-            val autoIngestTime = settingsViewModel.autoIngestTime.collectAsState()
-
-            Surface(
-                color = MaterialTheme.colorScheme.background
+    Surface(color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize())
+    {
+        LazyColumn(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+            item {
+                val screenRecordingEnabled = settingsViewModel.screenRecordingEnabled.collectAsState()
+                val isIngesting = settingsViewModel.isIngesting.collectAsState()
+                val defaultRecordApps = settingsViewModel.defaultRecordApps.collectAsState()
+                val autoIngestEnabled = settingsViewModel.autoIngestEnabled.collectAsState()
+                val autoIngestTime = settingsViewModel.autoIngestTime.collectAsState()
+
                 MarkdownText(
                     markdown = """
-                    ### Ingest Screenshots
-                    * Run a manual ingestion of screenshots with options to add to the database, perform OCR, and embed the results.
+                    |### Ingest Screenshots
+                    |* Run a manual ingestion of screenshots with options to add to the database, perform OCR, and embed the results.
                     
-                """.trimIndent(),
-                    modifier = Modifier.padding(16.dp),
+                """.trimMargin(),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp,
+                    modifier = Modifier.padding(16.dp)
 
                     )
-            }
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = {
-                        if (context is MainActivity) {
-                            context.ingestScreenshots()
-                        }
-                    },
-                    modifier = Modifier.padding(8.dp)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Ingest Screenshots")
-                }
-                if (settingsViewModel.isIngesting.collectAsState().value) {
-                    CircularProgressIndicator(
+                    Button(
+                        onClick = {
+                            if (context is MainActivity) {
+                                context.ingestScreenshots()
+                            }
+                        },
                         modifier = Modifier.padding(8.dp)
-                    )
+                    ) {
+                        Text("Ingest Screenshots")
+                    }
+                    if (settingsViewModel.isIngesting.collectAsState().value) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
-            Surface(
-                color = MaterialTheme.colorScheme.background
-            ) {
+                Spacer(modifier = Modifier.height(16.dp))
                 MarkdownText(
                     markdown = """
-                    ### Screen Recording
-                    * Start a screen recording background process. Stop it through the notification bar.
+                    |### Screen Recording
+                    |* Start a screen recording background process. Stop it through the notification bar.
                     
-                """.trimIndent(),
-                    modifier = Modifier.padding(16.dp),
+                """.trimMargin(),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp,
+                    modifier = Modifier.padding(16.dp)
 
                     )
-            }
 
-            ToggleButton(
-                checked = settingsViewModel.screenRecordingEnabled.collectAsState().value,
-                text = "Screen Recording",
-                onToggleOn = settingsViewModel::toggleScreenRecording,
-                onToggleOff = settingsViewModel::toggleScreenRecording,
-                onClickSettings = { /* Open settings for keystroke tracking */ }
-            )
+                ToggleButton(
+                    checked = settingsViewModel.screenRecordingEnabled.collectAsState().value,
+                    text = "Screen Recording",
+                    onToggleOn = settingsViewModel::toggleScreenRecording,
+                    onToggleOff = settingsViewModel::toggleScreenRecording,
+                    onClickSettings = { /* Open settings for keystroke tracking */ }
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
-            Surface(
-                color = MaterialTheme.colorScheme.background
-            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
                 MarkdownText(
                     markdown = """
                     ### Auto Ingest
@@ -147,33 +142,30 @@ fun SettingsScreen(navController: NavController,
                     fontSize = 16.sp,
 
                     )
-            }
 
-            ToggleButton(
-                checked = settingsViewModel.autoIngestEnabled.collectAsState().value,
-                text = "Auto Ingest",
-                onToggleOn = settingsViewModel::toggleAutoIngest,
-                onToggleOff = settingsViewModel::toggleAutoIngest,
-                onClickSettings = { /* Open settings for keystroke tracking */ }
-            )
 
-            TextField(
-                value = settingsViewModel.autoIngestTime.collectAsState().value.toString(),
-                onValueChange = { newValue ->
-                    val newIntValue = newValue.toIntOrNull()
-                    if (newIntValue != null) {
-                        settingsViewModel.updateAutoIngestTime(newIntValue)
-                    }
-                },
-                label = { Text("Hour to Auto Ingest (military time)") },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-            )
+                ToggleButton(
+                    checked = settingsViewModel.autoIngestEnabled.collectAsState().value,
+                    text = "Auto Ingest",
+                    onToggleOn = settingsViewModel::toggleAutoIngest,
+                    onToggleOff = settingsViewModel::toggleAutoIngest,
+                    onClickSettings = { /* Open settings for keystroke tracking */ }
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                TextField(
+                    value = settingsViewModel.autoIngestTime.collectAsState().value.toString(),
+                    onValueChange = { newValue ->
+                        val newIntValue = newValue.toIntOrNull()
+                        if (newIntValue != null) {
+                            settingsViewModel.updateAutoIngestTime(newIntValue)
+                        }
+                    },
+                    label = { Text("Hour to Auto Ingest (military time)") },
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                )
 
-            Surface(
-                color = MaterialTheme.colorScheme.background
-            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
                 MarkdownText(
                     markdown = """
                     ## Record New Apps By Default
@@ -185,21 +177,17 @@ fun SettingsScreen(navController: NavController,
                     fontSize = 16.sp,
 
                     )
-            }
 
-            ToggleButton(
-                checked = settingsViewModel.defaultRecordApps.collectAsState().value,
-                text = "Record New Apps By Default",
-                onToggleOn = settingsViewModel::toggleDefaultRecordApps,
-                onToggleOff = settingsViewModel::toggleDefaultRecordApps,
-                onClickSettings = {}
-            )
+                ToggleButton(
+                    checked = settingsViewModel.defaultRecordApps.collectAsState().value,
+                    text = "Record New Apps By Default",
+                    onToggleOn = settingsViewModel::toggleDefaultRecordApps,
+                    onToggleOff = settingsViewModel::toggleDefaultRecordApps,
+                    onClickSettings = {}
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Surface(
-                color = MaterialTheme.colorScheme.background
-            ) {
                 MarkdownText(
                     markdown = """
                     ### Manage Recordings
@@ -211,20 +199,17 @@ fun SettingsScreen(navController: NavController,
                     fontSize = 16.sp,
 
                     )
-            }
 
-            Button(
-                onClick = { navController.navigate("manageRecordings") },
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Text("Manage Recordings")
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { navController.navigate("manageRecordings") },
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text("Manage Recordings")
+                }
 
-            Surface(
-                color = MaterialTheme.colorScheme.background
-            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
                 MarkdownText(
                     markdown = """
                     ### Chat
@@ -236,13 +221,13 @@ fun SettingsScreen(navController: NavController,
                     fontSize = 16.sp,
 
                     )
-            }
 
-            Button(
-                onClick = { navController.navigate("chat") },
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Text("Chat")
+                Button(
+                    onClick = { navController.navigate("chat") },
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text("Chat")
+                }
             }
         }
     }
