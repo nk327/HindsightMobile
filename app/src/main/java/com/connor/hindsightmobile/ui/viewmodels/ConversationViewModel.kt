@@ -239,6 +239,8 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
                 _isGenerating.postValue(false)
             }
         }
+        val llamaSession = llamaModel?.createSession()
+        this@ConversationViewModel.llamaSession = llamaSession
     }
 
     @MainThread

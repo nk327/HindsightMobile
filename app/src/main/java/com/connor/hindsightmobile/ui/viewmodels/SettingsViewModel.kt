@@ -11,6 +11,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.connor.hindsightmobile.models.RecorderModel
 import com.connor.hindsightmobile.services.BackgroundRecorderService
+import com.connor.hindsightmobile.services.IngestScreenshotsService
 import com.connor.hindsightmobile.ui.viewmodels.ManageRecordingsViewModel
 import com.connor.hindsightmobile.utils.Preferences
 import kotlinx.coroutines.channels.Channel
@@ -34,6 +35,8 @@ class SettingsViewModel(val app: Application) : AndroidViewModel(app) {
         Preferences.prefs.getBoolean(Preferences.autoingestenabled, false)
     )
     val autoIngestEnabled = _autoIngestEnabled.asStateFlow()
+
+    val isIngesting = IngestScreenshotsService.isRunning.asStateFlow()
 
     private val _autoIngestTime = MutableStateFlow(
         Preferences.prefs.getInt(Preferences.autoingesttime, 2)

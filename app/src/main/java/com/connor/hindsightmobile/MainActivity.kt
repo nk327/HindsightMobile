@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity() {
 
     fun ingestScreenshots(){
         Log.d("MainActivity", "Ingesting screenshots")
-        if (IngestScreenshotsService.isRunning){
+        if (IngestScreenshotsService.isRunning.value){
             Log.d("MainActivity", "IngestScreenshotsService is already running")
             return
         }

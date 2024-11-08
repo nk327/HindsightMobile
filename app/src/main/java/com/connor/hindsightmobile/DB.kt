@@ -223,12 +223,13 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
 
         val cursor = db.rawQuery(query, null)
 
-        val framesMap = mutableMapOf<Int, Pair<Long, MutableList<Map<String, Any?>>>>()
+        val framesMap = mutableMapOf<Int, Triple<Long, String, MutableList<Map<String, Any?>>>>()
 
         if (cursor.moveToFirst()) {
             do {
                 val frameId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
                 val timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP))
+                val application = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APPLICATION))
                 val ocrText = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_TEXT)) ?: ""
 
                 val ocrResult = mapOf(
@@ -241,7 +242,7 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
                     "block_num" to cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_BLOCK_NUM))
                 )
                 if (ocrText.isNotEmpty()) {
-                    framesMap.getOrPut(frameId) { timestamp to mutableListOf() }.second.add(ocrResult)
+                    framesMap.getOrPut(frameId) { Triple(timestamp, application, mutableListOf()) }.third.add(ocrResult)
                 }
             } while (cursor.moveToNext())
         }
@@ -249,12 +250,13 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
         cursor.close()
 
         framesMap.forEach { (frameId, pair) ->
-            val (timestamp, ocrResults) = pair
+            val (timestamp, application, ocrResults) = pair
             if (ocrResults.isNotEmpty()) { // Only add if there’s at least one non-empty text result
                 framesWithOCRResults.add(
                     mapOf(
                         "frame_id" to frameId,
                         "timestamp" to timestamp,
+                        "application" to application,
                         "ocr_results" to ocrResults
                     )
                 )

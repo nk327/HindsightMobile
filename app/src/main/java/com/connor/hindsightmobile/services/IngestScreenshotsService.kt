@@ -38,6 +38,7 @@ import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import io.objectbox.Box
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.io.BufferedWriter
 import java.io.File
@@ -85,7 +86,7 @@ class IngestScreenshotsService : LifecycleService() {
             )
         }
 
-        isRunning = true
+        isRunning.value = true
 
         runCatching {
             unregisterReceiver(ingesterReceiver)
@@ -210,10 +211,11 @@ class IngestScreenshotsService : LifecycleService() {
         }
     }
 
-    private suspend fun embedScreenshot(frameId: Int, timestamp: Long, frameText: String, sentenceEncoder: SentenceEmbeddingProvider) {
+    private suspend fun embedScreenshot(frameId: Int, timestamp: Long,  application: String, frameText: String,
+                                        sentenceEncoder: SentenceEmbeddingProvider) {
         val embedding: FloatArray = sentenceEncoder.encodeText(frameText)
         framesBox.put(ObjectBoxFrame(frameId = frameId, timestamp = timestamp,
-            frameText = frameText, embedding = embedding))
+            frameText = frameText, embedding = embedding, application = application))
         Log.d("IngestScreenshotsService", "Added Embedding for frameId $frameId")
     }
 
@@ -232,10 +234,11 @@ class IngestScreenshotsService : LifecycleService() {
             val frameId = frame["frame_id"] as Int
             val timestamp = frame["timestamp"] as Long
             val ocrResults = frame["ocr_results"] as List<Map<String, Any?>>
+            val application = frame["application"] as String
 
             val combinedOCR = processOCRResults(ocrResults)
 
-            embedScreenshot(frameId, timestamp, combinedOCR, sentenceEncoder)
+            embedScreenshot(frameId, timestamp, application, combinedOCR, sentenceEncoder)
             delay(100)
         }
     }
@@ -384,7 +387,7 @@ class IngestScreenshotsService : LifecycleService() {
         Log.d("IngestScreenshotsService", "onDestroy")
         sendBroadcast(Intent(INGEST_SCREENSHOTS_FINISHED))
         stopIngest = true
-        isRunning = false
+        isRunning.value = false
 
         lifecycleScope.launch {
             runCatching {
@@ -404,6 +407,6 @@ class IngestScreenshotsService : LifecycleService() {
         const val STOP_ACTION = "STOP"
         const val INGEST_SCREENSHOTS_FINISHED = "com.connor.hindsightmobile.INGEST_SCREENSHOTS_FINISHED"
         const val INGEST_SCREENSHOTS_STARTED = "com.connor.hindsightmobile.INGEST_SCREENSHOTS_STARTED"
-        var isRunning = false
+        val isRunning = MutableStateFlow(false)
     }
 }

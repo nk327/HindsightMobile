@@ -1,15 +1,19 @@
 package com.connor.hindsightmobile.ui.screens
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -48,24 +52,37 @@ fun SettingsScreen(navController: NavController,
         modifier = Modifier.padding(top = 16.dp)
     ) {
         val screenRecordingEnabled = settingsViewModel.screenRecordingEnabled.collectAsState()
+        val isIngesting = settingsViewModel.isIngesting.collectAsState()
         val defaultRecordApps = settingsViewModel.defaultRecordApps.collectAsState()
         val autoIngestEnabled = settingsViewModel.autoIngestEnabled.collectAsState()
         val autoIngestTime = settingsViewModel.autoIngestTime.collectAsState()
 
-        Button(
-            onClick = {
-                if (context is MainActivity) {
-                    context.ingestScreenshots()
-                }
-            },
-            modifier = Modifier
-                .padding(top = 16.dp)
-                .padding(
-                    16.dp
+        Row (modifier = Modifier.padding(top = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically){
+            Button(
+                onClick = {
+                    if (context is MainActivity) {
+                        context.ingestScreenshots()
+                    }
+                },
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .padding(
+                        16.dp
+                    )
+            ) {
+                Text("Ingest Screenshots")
+            }
+            if (isIngesting.value){
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(top = 16.dp)
                 )
-        ) {
-            Text("Ingest Screenshots")
+            }
         }
+
         ToggleButton(
             checked = screenRecordingEnabled.value,
             text = "Screen Recording",

@@ -10,7 +10,7 @@ import com.connor.hindsightmobile.services.IngestScreenshotsService
 class IngestAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Log.d("IngestAlarmReceiver", "Alarm received, starting IngestScreenshotsService")
-        if (!IngestScreenshotsService.isRunning){
+        if (!IngestScreenshotsService.isRunning.value){
             val ingestIntent = Intent(context, IngestScreenshotsService::class.java)
             ContextCompat.startForegroundService(context, ingestIntent)
         }

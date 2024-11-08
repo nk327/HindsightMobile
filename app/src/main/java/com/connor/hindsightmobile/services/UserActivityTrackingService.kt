@@ -59,7 +59,7 @@ class UserActivityTrackingService : AccessibilityService() {
             val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
             packageManager.getApplicationLabel(applicationInfo).toString()
         } catch (e: PackageManager.NameNotFoundException) {
-            Log.e("UserActivityTrackingService", "App not found for package: $packageName")
+            Log.e("UserActivityTrackingService", "App not found for package: $packageName", e)
             null
         }
     }
