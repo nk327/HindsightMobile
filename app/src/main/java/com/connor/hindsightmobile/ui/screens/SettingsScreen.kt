@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -84,8 +87,9 @@ fun SettingsScreen(navController: NavController,
 
                 MarkdownText(
                     markdown = """
+                    |## Control Center
                     |### Ingest Screenshots
-                    |* Run a manual ingestion of screenshots with options to add to the database, perform OCR, and embed the results.
+                    |* Run a manual ingestion of screenshots with options to add to the database, perform OCR, and embed the results. Will also compress any screenshots not from today.
                     
                 """.trimMargin(),
                     color = MaterialTheme.colorScheme.onSurface,
@@ -93,8 +97,6 @@ fun SettingsScreen(navController: NavController,
                     modifier = Modifier.padding(16.dp)
 
                     )
-
-                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -106,9 +108,13 @@ fun SettingsScreen(navController: NavController,
                                 context.ingestScreenshots()
                             }
                         },
-                        modifier = Modifier.padding(8.dp)
+                        modifier = Modifier.padding(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.onSurface,
+                            contentColor = MaterialTheme.colorScheme.surface
+                        )
                     ) {
-                        Text("Ingest Screenshots")
+                        Text("Ingest")
                     }
                     if (settingsViewModel.isIngesting.collectAsState().value) {
                         CircularProgressIndicator(
@@ -117,9 +123,58 @@ fun SettingsScreen(navController: NavController,
                     }
                 }
 
+                MarkdownText(
+                    markdown = """
+                    ### Manage Recordings
+                    * Navigate to manage recordings, select apps to record, and delete all associated content for an app.
+                    
+                """.trimIndent(),
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 16.sp,
+
+                    )
+
+                Button(
+                    onClick = { navController.navigate("manageRecordings") },
+                    modifier = Modifier.padding(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onSurface,
+                        contentColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Text("Manage Recordings")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                MarkdownText(
+                    markdown = """
+                    ### Chat
+                    * Go to the chat screen.
+                    
+                """.trimIndent(),
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 16.sp,
+
+                    )
+
+                Button(
+                    onClick = { navController.navigate("chat") },
+                    modifier = Modifier.padding(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onSurface,
+                        contentColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Text("Chat")
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
                 MarkdownText(
                     markdown = """
+                    |## Settings
                     |### Screen Recording
                     |* Start a screen recording background process. Stop it through the notification bar.
                     
@@ -130,12 +185,18 @@ fun SettingsScreen(navController: NavController,
 
                     )
 
-                ToggleButton(
+                Switch(
                     checked = settingsViewModel.screenRecordingEnabled.collectAsState().value,
-                    text = "Screen Recording",
-                    onToggleOn = settingsViewModel::toggleScreenRecording,
-                    onToggleOff = settingsViewModel::toggleScreenRecording,
-                    onClickSettings = { /* Open settings for keystroke tracking */ }
+                    onCheckedChange = {
+                        settingsViewModel.toggleScreenRecording()
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.primary, // More contrasting color when checked
+                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer, // Visible track when checked
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, // Thumb color when unchecked
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    modifier = Modifier.padding(start = 8.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -152,13 +213,18 @@ fun SettingsScreen(navController: NavController,
 
                     )
 
-
-                ToggleButton(
+                Switch(
                     checked = settingsViewModel.autoIngestEnabled.collectAsState().value,
-                    text = "Auto Ingest",
-                    onToggleOn = settingsViewModel::toggleAutoIngest,
-                    onToggleOff = settingsViewModel::toggleAutoIngest,
-                    onClickSettings = { /* Open settings for keystroke tracking */ }
+                    onCheckedChange = {
+                        settingsViewModel.toggleAutoIngest()
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.primary, // More contrasting color when checked
+                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer, // Visible track when checked
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, // Thumb color when unchecked
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    modifier = Modifier.padding(start = 8.dp)
                 )
 
                 TextField(
@@ -187,56 +253,20 @@ fun SettingsScreen(navController: NavController,
 
                     )
 
-                ToggleButton(
+                Switch(
                     checked = settingsViewModel.defaultRecordApps.collectAsState().value,
-                    text = "Record New Apps By Default",
-                    onToggleOn = settingsViewModel::toggleDefaultRecordApps,
-                    onToggleOff = settingsViewModel::toggleDefaultRecordApps,
-                    onClickSettings = {}
+                    onCheckedChange = {
+                        settingsViewModel.toggleDefaultRecordApps()
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.primary, // More contrasting color when checked
+                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer, // Visible track when checked
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, // Thumb color when unchecked
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    modifier = Modifier.padding(start = 8.dp)
                 )
-
                 Spacer(modifier = Modifier.height(16.dp))
-
-                MarkdownText(
-                    markdown = """
-                    ### Manage Recordings
-                    * Navigate to manage recordings, select apps to record, and delete all associated content for an app.
-                    
-                """.trimIndent(),
-                    modifier = Modifier.padding(16.dp),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 16.sp,
-
-                    )
-
-
-                Button(
-                    onClick = { navController.navigate("manageRecordings") },
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Text("Manage Recordings")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                MarkdownText(
-                    markdown = """
-                    ### Chat
-                    * Go to the chat screen.
-                    
-                """.trimIndent(),
-                    modifier = Modifier.padding(16.dp),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 16.sp,
-
-                    )
-
-                Button(
-                    onClick = { navController.navigate("chat") },
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Text("Chat")
-                }
             }
         }
     }
