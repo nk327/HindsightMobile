@@ -75,6 +75,15 @@ fun SettingsScreen(navController: NavController,
 
                 MarkdownText(
                     markdown = """
+                        |# Hindsight Mobile Settings
+                    """.trimMargin(),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+
+                MarkdownText(
+                    markdown = """
                     |### Ingest Screenshots
                     |* Run a manual ingestion of screenshots with options to add to the database, perform OCR, and embed the results.
                     
@@ -168,7 +177,7 @@ fun SettingsScreen(navController: NavController,
 
                 MarkdownText(
                     markdown = """
-                    ## Record New Apps By Default
+                    ### **Record New Apps By Default**
                     * Automatically start recording new apps when they are accessed for the first time.
                     
                 """.trimIndent(),
