@@ -108,7 +108,7 @@ fun SettingsScreen(navController: NavController,
                                 context.ingestScreenshots()
                             }
                         },
-                        modifier = Modifier.padding(8.dp),
+                        modifier = Modifier.padding(25.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.onSurface,
                             contentColor = MaterialTheme.colorScheme.surface
@@ -137,7 +137,7 @@ fun SettingsScreen(navController: NavController,
 
                 Button(
                     onClick = { navController.navigate("manageRecordings") },
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(25.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.onSurface,
                         contentColor = MaterialTheme.colorScheme.surface
@@ -162,7 +162,7 @@ fun SettingsScreen(navController: NavController,
 
                 Button(
                     onClick = { navController.navigate("chat") },
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(25.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.onSurface,
                         contentColor = MaterialTheme.colorScheme.surface
@@ -196,7 +196,7 @@ fun SettingsScreen(navController: NavController,
                         uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, // Thumb color when unchecked
                         uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 25.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -224,7 +224,7 @@ fun SettingsScreen(navController: NavController,
                         uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, // Thumb color when unchecked
                         uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 25.dp)
                 )
 
                 TextField(
@@ -236,7 +236,8 @@ fun SettingsScreen(navController: NavController,
                         }
                     },
                     label = { Text("Hour to Auto Ingest (military time)") },
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.padding(start = 25.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -264,7 +265,7 @@ fun SettingsScreen(navController: NavController,
                         uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, // Thumb color when unchecked
                         uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 25.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }

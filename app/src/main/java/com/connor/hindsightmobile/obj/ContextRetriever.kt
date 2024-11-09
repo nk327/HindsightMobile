@@ -17,7 +17,7 @@ class ContextRetriever(context : Context){
         CoroutineScope(Dispatchers.IO).launch {
             val queryEmbedding: FloatArray = sentenceEncoder.encodeText(query)
             val allQueryResults = framesBox
-                .query(ObjectBoxFrame_.embedding.nearestNeighbors(queryEmbedding, 25)
+                .query(ObjectBoxFrame_.embedding.nearestNeighbors(queryEmbedding, 200)
                     .and(ObjectBoxFrame_.application.notEqual("com.connor.hindsightmobile"))
                 )
                 .build()
@@ -30,15 +30,15 @@ class ContextRetriever(context : Context){
 
             val queryResults = allQueryResults
                 .map { Pair(it.score.toFloat(), it.get()) }
-                .sortedBy { it.second.timestamp }
                 .take(n)
+                .sortedBy { it.second.timestamp }
 
             val retrievedContextList = ArrayList<RetrievedContext>()
             var contextString = ""
             queryResults.forEach { (score, frame) ->
                 retrievedContextList.add(RetrievedContext(frame.frameId, frame.frameText.toString()))
                 val localTime = convertToLocalTime(frame.timestamp)
-                contextString += "Text from Screenshot of ${frame.application} at ${localTime}\n"
+                contextString += "Text from Screenshot of ${frame.application} at ${localTime}"
                 contextString += frame.frameText.toString() + "\n\n"
             }
 

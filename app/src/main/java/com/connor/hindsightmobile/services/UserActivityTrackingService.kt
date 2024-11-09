@@ -13,8 +13,9 @@ class UserActivityTrackingService : AccessibilityService() {
     private lateinit var appPackages: HashSet<String>
 
     private val excludedPackages = listOf(
-        "com.android.systemui",      // System UI
-        "com.android.launcher",      // Default launcher
+        "com.android.systemui",
+        "com.android.launcher",
+        "com.google.android.inputmethod.latin"
     )
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {

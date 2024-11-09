@@ -265,6 +265,67 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
         return framesWithOCRResults
     }
 
+    fun getFramesWithOCRResults(frameIds: List<Int>): List<Map<String, Any?>> {
+        val db = this.readableDatabase
+        val framesWithOCRResults = mutableListOf<Map<String, Any?>>()
+
+        val frameIdsString = frameIds.joinToString(",") { "'$it'" }
+
+        val query = """
+        SELECT f.$COLUMN_ID, f.$COLUMN_TIMESTAMP, f.$COLUMN_APPLICATION,
+               o.$COLUMN_OCR_RESULT_TEXT, o.$COLUMN_OCR_RESULT_X, o.$COLUMN_OCR_RESULT_Y, 
+               o.$COLUMN_OCR_RESULT_WIDTH, o.$COLUMN_OCR_RESULT_HEIGHT, 
+               o.$COLUMN_OCR_RESULT_CONFIDENCE, o.$COLUMN_OCR_RESULT_BLOCK_NUM
+        FROM $TABLE_FRAMES f
+        INNER JOIN $TABLE_OCR_RESULTS o ON f.$COLUMN_ID = o.$COLUMN_OCR_RESULT_FRAME_ID
+        WHERE o.$COLUMN_OCR_RESULT_TEXT IS NOT NULL
+        AND f.$COLUMN_ID IN ($frameIdsString)
+    """.trimIndent()
+
+        val cursor = db.rawQuery(query, null)
+
+        val framesMap = mutableMapOf<Int, Triple<Long, String, MutableList<Map<String, Any?>>>>()
+
+        if (cursor.moveToFirst()) {
+            do {
+                val frameId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+                val timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP))
+                val application = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APPLICATION))
+                val ocrText = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_TEXT)) ?: ""
+
+                val ocrResult = mapOf(
+                    "text" to cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_TEXT)),
+                    "x" to cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_X)),
+                    "y" to cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_Y)),
+                    "width" to cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_WIDTH)),
+                    "height" to cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_HEIGHT)),
+                    "confidence" to cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_CONFIDENCE)),
+                    "block_num" to cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_OCR_RESULT_BLOCK_NUM))
+                )
+                if (ocrText.isNotEmpty()) {
+                    framesMap.getOrPut(frameId) { Triple(timestamp, application, mutableListOf()) }.third.add(ocrResult)
+                }
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+
+        framesMap.forEach { (frameId, pair) ->
+            val (timestamp, application, ocrResults) = pair
+            if (ocrResults.isNotEmpty()) { // Only add if there’s at least one non-empty text result
+                framesWithOCRResults.add(
+                    mapOf(
+                        "frame_id" to frameId,
+                        "timestamp" to timestamp,
+                        "application" to application,
+                        "ocr_results" to ocrResults
+                    )
+                )
+            }
+        }
+        return framesWithOCRResults
+    }
+
     fun insertVideoChunk(videoPath: String): Long {
         val db = this.writableDatabase
         val values = ContentValues().apply {
@@ -434,7 +495,7 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
             db.delete(TABLE_VIDEO_CHUNKS, "$COLUMN_VIDEO_CHUNK_PATH LIKE ?", arrayOf("%$applicationDashes%"))
 
             db.setTransactionSuccessful()
-            Log.d("DB", "Successfully deleted all data for app package: $appPackage")
+            Log.d("DB", "Successfully deleted all DB data for app package: $appPackage")
         } catch (e: Exception) {
             Log.e("DB", "Failed to delete data for app package: $appPackage", e)
         } finally {
