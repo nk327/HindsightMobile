@@ -29,11 +29,11 @@ fun processOCRResults(ocrResults: List<Map<String, Any?>>): String {
     val textsByBlockNum = meaningfulTexts.groupBy { it["block_num"] as Int }
 
     // Sort the blocks by block_num to maintain order
-    val sortedBlocks = textsByBlockNum.toSortedMap()
+    val sortedBlocks = textsByBlockNum.entries.sortedBy { entry ->
+        entry.value.minOf { it["y"] as Int }
+    }
 
-    // Combine texts within each block and then combine blocks
-    val paragraphs = sortedBlocks.values.map { blockTexts ->
-        // Optionally sort texts within a block by position
+    val paragraphs = sortedBlocks.map { (_, blockTexts) ->
         val sortedBlockTexts = blockTexts.sortedWith(
             compareBy({ it["y"] as Int }, { it["x"] as Int })
         )
