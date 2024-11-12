@@ -13,7 +13,7 @@ class ContextRetriever(context : Context){
     private val framesBox = ObjectBoxStore.store.boxFor(ObjectBoxFrame::class.java)
     private val sentenceEncoder = SentenceEmbeddingProvider(context)
 
-    suspend fun getContext(query: String, n: Int = 5, n_seconds: Int = 120): QueryResults = suspendCoroutine { continuation ->
+    suspend fun getContext(query: String, nContexts: Int = 3, nSeconds: Int = 120): QueryResults = suspendCoroutine { continuation ->
         CoroutineScope(Dispatchers.IO).launch {
             val queryEmbedding: FloatArray = sentenceEncoder.encodeText(query)
             val allQueryResults = framesBox
@@ -39,7 +39,7 @@ class ContextRetriever(context : Context){
             var lastTimestamp: Long? = null
 
             for ((score, frame) in sortedResults) {
-                if (lastTimestamp == null || lastTimestamp!! - frame.timestamp > n_seconds * 1000) {
+                if (lastTimestamp == null || lastTimestamp!! - frame.timestamp > nSeconds * 1000) {
                     filteredResults.add(Pair(score, frame))
                     lastTimestamp = frame.timestamp
                 }
@@ -48,7 +48,7 @@ class ContextRetriever(context : Context){
             // Sort by score in descending order and take the top n (Note score is actually distance so we want smal)
             val topResultsByScore = filteredResults
                 .sortedBy { it.first }
-                .take(n)
+                .take(nContexts)
 
             // Sort the top n results by timestamp in ascending order
             val finalResults = topResultsByScore.sortedBy { it.second.timestamp }
@@ -58,7 +58,7 @@ class ContextRetriever(context : Context){
             finalResults.forEach { (score, frame) ->
                 retrievedContextList.add(RetrievedContext(frame.frameId, frame.frameText.toString()))
                 val localTime = convertToLocalTime(frame.timestamp)
-                contextString += "Text from Screenshot of ${frame.application} at ${localTime} Distance ${score}\n"
+                contextString += "Text from Screenshot of ${frame.application} at ${localTime}"
                 contextString += frame.frameText.toString() + "\n\n"
             }
 
