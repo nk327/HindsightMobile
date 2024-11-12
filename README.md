@@ -13,20 +13,20 @@
 5. Run the application using `Run` > `Run 'app'` or the play button in Android Studio
 
 # Settings
-* `Chat`: go to chat
 * `Ingest Screenshots`: runs a manual ingestion of screenshots
-  * Add to db
-  * OCR
-  * Embed
-* `Screen Recording`: Start Screen recording Background Process (May have to click stop on Notification to stop)
+    * Add to db
+    * OCR
+    * Embed
 * `Manage Recordings`: Takes you to manage recordings screen
   * If checked the app will be record
-  * Delete all content (screenshots, videos, embeddings, OCR Results) for a given app (Not implemented yet)
+  * Delete all content (screenshots, videos, embeddings, OCR Results) for a given app
+* `Chat`: go to chat
+* `Screen Recording`: Start Screen recording Background Process (May have to click stop on Notification to stop)
+* `Auto Ingest`: Auto Run Ingestion at
+* `Hour to Auto Ingest (Military Time)`
+    * Default is 2 am
 * IMPORTANT PLEASE READ THIS `Record New Apps By Default`: when you enter an app that has not been
     recorded yet it will automatically start recording
-* `Auto Ingest`: Auto Run Ingestion at 
-* `Hour to Auto Ingest (Military Time)`
-  * Default is 2 am
 
 # Shoutouts
 * [LMPlayground](https://github.com/andriydruk/LMPlayground/tree/main)
