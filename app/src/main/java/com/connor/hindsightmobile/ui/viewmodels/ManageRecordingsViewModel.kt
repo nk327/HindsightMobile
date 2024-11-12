@@ -3,12 +3,7 @@ package com.connor.hindsightmobile.ui.viewmodels
 import android.app.Application
 import android.content.Intent
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.connor.hindsightmobile.DB

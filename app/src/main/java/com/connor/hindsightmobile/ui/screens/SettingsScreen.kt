@@ -2,7 +2,6 @@ package com.connor.hindsightmobile.ui.screens
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,8 +30,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.connor.hindsightmobile.MainActivity
-import com.connor.hindsightmobile.R
-import com.connor.hindsightmobile.ui.elements.ToggleButton
 import com.connor.hindsightmobile.ui.viewmodels.SettingsViewModel
 import dev.jeziellago.compose.markdowntext.MarkdownText
 

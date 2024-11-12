@@ -12,7 +12,6 @@ import androidx.lifecycle.viewModelScope
 import com.connor.hindsightmobile.models.RecorderModel
 import com.connor.hindsightmobile.services.BackgroundRecorderService
 import com.connor.hindsightmobile.services.IngestScreenshotsService
-import com.connor.hindsightmobile.ui.viewmodels.ManageRecordingsViewModel
 import com.connor.hindsightmobile.utils.Preferences
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

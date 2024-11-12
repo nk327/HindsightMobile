@@ -25,7 +25,6 @@ import com.connor.hindsightmobile.R
 import com.connor.hindsightmobile.enums.RecorderState
 import com.connor.hindsightmobile.utils.NotificationHelper
 import com.connor.hindsightmobile.utils.PermissionHelper
-import com.connor.hindsightmobile.utils.Preferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
