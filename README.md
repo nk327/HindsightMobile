@@ -29,6 +29,9 @@
 * IMPORTANT PLEASE READ THIS `Record New Apps By Default`: when you enter an app that has not been
     recorded yet it will automatically start recording
 
+# Bonus
+* If you click on the Assistant's response you can see the exact prompt that went into the LLM
+
 # Shoutouts
 * [LMPlayground](https://github.com/andriydruk/LMPlayground/tree/main)
 * [Android-Document-QA](https://github.com/shubham0204/Android-Document-QA/tree/main)
