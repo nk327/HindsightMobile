@@ -162,8 +162,6 @@ fun ConversationScreen(navController: NavController, viewModel: ConversationView
                     onCancelClicked = {
                         viewModel.cancelGeneration()
                     },
-                    // let this element handle the padding so that the elevation is shown behind the
-                    // navigation bar
                     resetScroll = {
                         scope.launch {
                             scrollState.animateScrollToItem(scrollState.layoutInfo.totalItemsCount- 1)
