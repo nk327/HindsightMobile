@@ -11,6 +11,7 @@
 4. You need to do a release build for the LLM to run quickly:
    * Go View -> Tool Windows -> Build Variants and then click the drop down for release
 5. Run the application using `Run` > `Run 'app'` or the play button in Android Studio
+    * If getting incompatible AGP version install the newest version of Android Studio
 
 # Settings
 * `Ingest Screenshots`: runs a manual ingestion of screenshots
