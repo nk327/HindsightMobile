@@ -5,7 +5,7 @@
 * Pass to LLM running locally using llamacpp
 
 # Installation
-1. `git clone --recursive git@github.com:cparish312/HindsightMobile.git`
+1. `git clone --recursive https://github.com/cparish312/HindsightMobile.git`
 2. Open the Project in Android Studio
 3. Connect your Android Device
 4. You need to do a release build for the LLM to run quickly:
