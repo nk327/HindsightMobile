@@ -20,6 +20,7 @@ class ContextRetriever(context : Context){
                 .query(ObjectBoxFrame_.embedding.nearestNeighbors(queryEmbedding, 200)
                     .and(ObjectBoxFrame_.application.notEqual("com.connor.hindsightmobile"))
                     .and(ObjectBoxFrame_.application.notEqual("com.google.android.inputmethod.latin"))
+                    .and(ObjectBoxFrame_.application.notEqual("com.google.android.apps.nexuslauncher"))
                 )
                 .build()
                 .findWithScores()
@@ -58,7 +59,7 @@ class ContextRetriever(context : Context){
             finalResults.forEach { (score, frame) ->
                 retrievedContextList.add(RetrievedContext(frame.frameId, frame.frameText.toString()))
                 val localTime = convertToLocalTime(frame.timestamp)
-                contextString += "Text from Screenshot of ${frame.application} at ${localTime}"
+                contextString += "Text from Screenshot of ${frame.application} at ${localTime}\n"
                 contextString += frame.frameText.toString() + "\n\n"
             }
 

@@ -185,6 +185,8 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
 
     @MainThread
     fun addMessage(message: Message) {
+        Log.d("ConversationViewModel", "addMessage called")
+        _isGenerating.postValue(true)
         uiState.addMessage(message)
         uiState.addMessage(
             Message(
@@ -209,7 +211,7 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
             uiState.addPromptToLastMessage(messageWithContext)
 
             val antiPrompt = _loadedModel.value?.antiPrompt
-            _isGenerating.postValue(true)
+
 
             Log.d("ConversationViewModel", "messageWithContext: $messageWithContext")
 

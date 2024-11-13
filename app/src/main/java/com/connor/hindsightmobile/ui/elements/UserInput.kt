@@ -76,6 +76,15 @@ fun UserInput(
         mutableStateOf(TextFieldValue())
     }
 
+    var isSending by remember { mutableStateOf(false) }
+
+    if (isSending) {
+        LaunchedEffect(Unit) {
+            kotlinx.coroutines.delay(2000) // Adjust delay time as needed
+            isSending = false
+        }
+    }
+
     // Used to decide if the keyboard should be shown
     var textFieldFocusState by remember { mutableStateOf(false) }
 
@@ -94,12 +103,11 @@ fun UserInput(
                     }
                     textFieldFocusState = focused
                 },
-                sendMessageEnabled = textState.text.isNotBlank(),
+                sendMessageEnabled = textState.text.isNotBlank() && !isSending,
                 onMessageSent = {
+                    isSending = true
                     onMessageSent(textState.text)
-                    // Reset text field and close keyboard
                     textState = TextFieldValue()
-                    // Move scroll to bottom
                     resetScroll()
                 },
                 onCancelClicked = onCancelClicked
