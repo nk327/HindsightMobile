@@ -1,8 +1,7 @@
 # HindsightMobile
-* Take a screenshot on your android every 2 seconds.
-* Run OCR
-* Use Objectbox for RAG
-* Pass to LLM running locally using llamacpp
+1) Takes a screenshot every 2 seconds (only of apps you choose)
+2) Reads and embeds the text from each screenshot with OCR
+3) Lets you chat with anything you've seen on your phone via a local LLM (my favorite: llama3.2 1B)
 
 # Installation
 ## Download Release
