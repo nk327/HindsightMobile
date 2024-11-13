@@ -5,6 +5,10 @@
 * Pass to LLM running locally using llamacpp
 
 # Installation
+## Download Release
+https://hindsight.life/files/hindsight_mobile-release.apk
+
+## Build from Source
 1. `git clone --recursive https://github.com/cparish312/HindsightMobile.git`
 2. Open the Project in Android Studio
 3. Connect your Android Device
