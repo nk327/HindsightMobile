@@ -67,12 +67,6 @@ fun SettingsScreen(navController: NavController,
             verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
             item {
-                val screenRecordingEnabled = settingsViewModel.screenRecordingEnabled.collectAsState()
-                val isIngesting = settingsViewModel.isIngesting.collectAsState()
-                val defaultRecordApps = settingsViewModel.defaultRecordApps.collectAsState()
-                val autoIngestEnabled = settingsViewModel.autoIngestEnabled.collectAsState()
-                val autoIngestTime = settingsViewModel.autoIngestTime.collectAsState()
-
                 MarkdownText(
                     markdown = """
                         |# Hindsight Mobile Settings
@@ -86,7 +80,7 @@ fun SettingsScreen(navController: NavController,
                     markdown = """
                     |## Control Center
                     |### Ingest Screenshots
-                    |* Run a manual ingestion of screenshots with options to add to the database, perform OCR, and embed the results. Will also compress any screenshots not from today.
+                    |* Run a manual ingestion of screenshots.
                     
                 """.trimMargin(),
                     color = MaterialTheme.colorScheme.onSurface,
