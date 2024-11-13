@@ -6,7 +6,8 @@
 
 # Installation
 ## Download Release
-https://hindsight.life/files/hindsight_mobile-release.apk
+1) Go to Settings > Apps > Special app access > Install unknown apps > give permission to your browser.
+2) Click on: https://hindsight.life/files/hindsight_mobile-release.apk
 
 ## Build from Source
 1. `git clone --recursive https://github.com/cparish312/HindsightMobile.git`
