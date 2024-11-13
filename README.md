@@ -1,4 +1,4 @@
-# hindsight_mobile
+# HindsightMobile
 * Take a screenshot on your android every 2 seconds.
 * Run OCR
 * Use Objectbox for RAG
@@ -12,6 +12,13 @@
    * Go View -> Tool Windows -> Build Variants and then click the drop down for release
 5. Run the application using `Run` > `Run 'app'` or the play button in Android Studio
     * If getting incompatible AGP version install the newest version of Android Studio
+
+# Communication
+<a href="https://discord.gg/CmWWW94E">
+    <img src="https://img.shields.io/discord/1285689349442109451?color=5865F2&logo=discord&logoColor=white&style=flat-square" alt="Join us on Discord">
+</a>
+
+Setup an onboarding session or just chat about the project [here](https://calendly.com/connorparish9)
 
 # Settings
 * `Ingest Screenshots`: runs a manual ingestion of screenshots
