@@ -1,7 +1,9 @@
 package com.connor.hindsightmobile.ui.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
@@ -17,10 +19,14 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import com.connor.hindsightmobile.ui.viewmodels.ManageRecordingsViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.connor.hindsightmobile.ui.elements.DeleteConfirmationDialog
+import dev.jeziellago.compose.markdowntext.MarkdownText
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,47 +37,66 @@ fun ManageRecordingsScreen(
     val viewModel: ManageRecordingsViewModel = viewModel()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var appToDelete by remember { mutableStateOf<AppInfo?>(null) }
+    Surface(color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize())
+    {
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(text = "Manage App Recording",
+                        fontSize = 24.sp)
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 2.dp).padding(end = 2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        TopAppBar(
-            title = { Text(text = "Manage App Recording") },
-            navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "Back"
+            MarkdownText(
+                markdown = """
+                        |* Check apps to have them recorded
+                        |* Click on the trash can to delete all data associated with an app
+                        """.trimMargin(),
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(viewModel.appList) { app ->
+                    AppItem(
+                        app = app,
+                        onAppSelected = { selectedApp ->
+                            viewModel.toggleAppIsRecording(selectedApp)
+                        },
+                        onDeleteAppData = { selectedApp ->
+                            appToDelete = selectedApp
+                            showDeleteDialog = true
+                        }
                     )
                 }
             }
-        )
-
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(viewModel.appList) { app ->
-                AppItem(
-                    app = app,
-                    onAppSelected = { selectedApp ->
-                        viewModel.toggleAppIsRecording(selectedApp)
+            if (showDeleteDialog && appToDelete != null) {
+                DeleteConfirmationDialog(
+                    app = appToDelete!!,
+                    onConfirm = {
+                        viewModel.deleteAppData(appToDelete!!)
+                        showDeleteDialog = false
+                        appToDelete = null
                     },
-                    onDeleteAppData = { selectedApp ->
-                        appToDelete = selectedApp
-                        showDeleteDialog = true
+                    onDismiss = {
+                        showDeleteDialog = false
+                        appToDelete = null
                     }
                 )
             }
-        }
-        if (showDeleteDialog && appToDelete != null) {
-            DeleteConfirmationDialog(
-                app = appToDelete!!,
-                onConfirm = {
-                    viewModel.deleteAppData(appToDelete!!)
-                    showDeleteDialog = false
-                    appToDelete = null
-                },
-                onDismiss = {
-                    showDeleteDialog = false
-                    appToDelete = null
-                }
-            )
         }
     }
 }
