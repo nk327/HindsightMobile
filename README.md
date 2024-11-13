@@ -6,8 +6,10 @@
 
 # Installation
 ## Download Release
-1) Go to Settings > Apps > Special app access > Install unknown apps > give permission to your browser.
-2) Click on: https://hindsight.life/files/hindsight_mobile-release.apk
+1) Go to Settings > Apps > Special app access > Install unknown apps > give permission to Google Drive.
+2) Click on: https://drive.google.com/file/d/11rnAUzfmktoxQFJvXFZkPAWPMMNFuxz2/view?usp=drive_link
+3) To give accessibility permissions you may need to click on the more info section on the top right of the HindsightMobile
+accessibility section and click "allow restricted settings"
 
 ## Build from Source
 1. `git clone --recursive https://github.com/cparish312/HindsightMobile.git`
