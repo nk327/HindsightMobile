@@ -43,16 +43,13 @@ import com.connor.hindsightmobile.ui.viewmodels.Message
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.connor.hindsightmobile.ui.viewmodels.PastQueriesViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConversationScreen(navController: NavController, viewModel: ConversationViewModel = viewModel()) {
+fun PastQueriesScreen(navController: NavController, viewModel: PastQueriesViewModel = viewModel()) {
 
-    val messages = viewModel.uiState.messages
-    val isGenerating by viewModel.isGenerating.observeAsState()
-    val progress by viewModel.modelLoadingProgress.observeAsState(0f)
-    val modelInfo by viewModel.loadedModel.observeAsState()
-    val models by viewModel.models.observeAsState(emptyList())
+    val messages = viewModel.getQueryList()
 
     HindsightMobileTheme {
 
@@ -62,58 +59,19 @@ fun ConversationScreen(navController: NavController, viewModel: ConversationView
         val scope = rememberCoroutineScope()
 
         val colorScheme = MaterialTheme.colorScheme
-        var modelReport by remember { mutableStateOf<String?>(null) }
 
         Scaffold(
             topBar = {
                 ConversationBar(
-                    modelInfo = modelInfo,
+                    modelInfo = null,
                     onSettingsIconPressed = {
-                        navController.navigate("mainSettings")
                     },
                     scrollBehavior = scrollBehavior,
                     onSelectModelPressed = {
-                        viewModel.loadModelList()
                     },
                     onUnloadModelPressed = {
-                        viewModel.unloadModel()
                     }
                 )
-                if (models.isNotEmpty()) {
-                    SelectModelDialog(
-                        models = models,
-                        onDownloadModel = { model ->
-                            viewModel.downloadModel(model)
-                        },
-                        onLoadModel = { model ->
-                            viewModel.loadModel(model)
-                        },
-                        onDismissRequest = {
-                            viewModel.resetModelList()
-                        }
-                    )
-                }
-                else if (modelReport != null) {
-                    AlertDialog(
-                        onDismissRequest = {
-                            modelReport = null
-                        },
-                        title = {
-                            Text(text = "Timings")
-                        },
-                        text = {
-                            Text(
-                                text = modelReport!!,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        },
-                        confirmButton = {
-                            TextButton(onClick = { modelReport = null }) {
-                                Text(text = "CLOSE")
-                            }
-                        }
-                    )
-                }
             },
             // Exclude ime and navigation bar padding so this can be added by the UserInput composable
             contentWindowInsets = ScaffoldDefaults
@@ -126,16 +84,7 @@ fun ConversationScreen(navController: NavController, viewModel: ConversationView
                 Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .drawBehind {
-                        val strokeWidth = 2.dp.toPx()
-                        val x = size.width * progress
-                        drawLine(
-                            colorScheme.primary,
-                            start = Offset(0f, 0f),
-                            end = Offset(x, 0f),
-                            strokeWidth = strokeWidth
-                        )
-                    }) {
+            ) {
                 Messages(
                     messages = messages,
                     navigateToProfile = { },
@@ -144,30 +93,6 @@ fun ConversationScreen(navController: NavController, viewModel: ConversationView
                     },
                     modifier = Modifier.weight(1f),
                     scrollState = scrollState
-                )
-                UserInput(
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .imePadding(),
-                    status = if (modelInfo == null)
-                        UserInputStatus.NOT_LOADED
-                    else if (isGenerating == true)
-                        UserInputStatus.GENERATING
-                    else
-                        UserInputStatus.IDLE,
-                    onMessageSent = { content ->
-                        viewModel.addMessage(
-                            Message("User", content)
-                        )
-                    },
-                    onCancelClicked = {
-                        viewModel.cancelGeneration()
-                    },
-                    resetScroll = {
-                        scope.launch {
-                            scrollState.animateScrollToItem(scrollState.layoutInfo.totalItemsCount- 1)
-                        }
-                    }
                 )
             }
         }

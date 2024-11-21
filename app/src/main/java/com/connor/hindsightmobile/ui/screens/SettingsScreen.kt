@@ -141,6 +141,31 @@ fun SettingsScreen(navController: NavController,
 
                 MarkdownText(
                     markdown = """
+                    ### View Query History
+                    * Navigate to a list of past queries and responses
+                    
+                """.trimIndent(),
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 16.sp,
+
+                    )
+
+                Button(
+                    onClick = { navController.navigate("pastQueries") },
+                    modifier = Modifier.padding(25.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onSurface,
+                        contentColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Text("Query History")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                MarkdownText(
+                    markdown = """
                     ### Chat
                     * Go to the chat screen.
                     

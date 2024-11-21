@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import com.connor.hindsightmobile.obj.OCRResult
 import com.connor.hindsightmobile.ui.elements.AppInfo
+import com.connor.hindsightmobile.ui.viewmodels.Message
 
 class DB private constructor(context: Context, databaseName: String = DATABASE_NAME) :
     SQLiteOpenHelper(context, databaseName, null, DATABASE_VERSION) {
@@ -401,6 +402,10 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
             Log.d("DB", "Record status updated for app with package $appPackage")
         }
         return rowsUpdated
+    }
+
+    fun getQueries(): List<Message> {
+        return emptyList()
     }
 
     fun getAllApps(): List<AppInfo> {

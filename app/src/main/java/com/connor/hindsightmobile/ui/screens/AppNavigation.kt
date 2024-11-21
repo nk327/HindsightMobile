@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import android.util.Base64
+import androidx.compose.ui.tooling.preview.Preview
 
 const val ASSISTANT_PROMPT_SCREEN = "assistantPromptScreen/{message}"
 
@@ -34,6 +35,10 @@ fun AppNavigation() {
         composable("manageRecordings"){
             ManageRecordingsScreen(navController)
         }
+        composable("pastQueries"){
+            PastQueriesScreen(navController)
+        }
+
         composable(
             route = ASSISTANT_PROMPT_SCREEN,
             arguments = listOf(navArgument("message") { type = NavType.StringType })
