@@ -43,6 +43,14 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
          private const val COLUMN_APP_PACKAGE = "package"
          private const val COLUMN_RECORD = "record"
 
+         private const val TABLE_CONVOS = "queries"
+         private const val COLUMN_CONVO_ID = "id"
+         private const val COLUMN_CONVO_TIMESTAMP = "timestamp"
+         private const val COLUMN_CONVO = "conversation"
+         private const val COLUMN_CONVO_OFFSETS = "offsets" // format: 0|4,4|10,10|<length>
+         private const val COLUMN_CONVO_USER_IDS = "user_ids"
+//         private const val COLUMN_ = ""
+
          @Volatile private var instance: DB? = null
 
          fun getInstance(context: Context, databaseName: String = DATABASE_NAME): DB =
@@ -52,6 +60,16 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
      }
 
     override fun onCreate(db: SQLiteDatabase) {
+        val createConvosTable = """
+        CREATE TABLE IF NOT EXISTS $TABLE_CONVOS (
+            $COLUMN_CONVO_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            $COLUMN_CONVO_TIMESTAMP INTEGER NOT NULL,
+            $COLUMN_CONVO TEXT,
+            $COLUMN_CONVO_OFFSETS TEXT,
+            $COLUMN_CONVO_USER_IDS TEXT
+            )
+        """.trimIndent()
+
         val createFramesTable = """
         CREATE TABLE IF NOT EXISTS $TABLE_FRAMES (
             $COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,6 +114,7 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
         db.execSQL(createVideoChunksTable)
         db.execSQL(createOcrResultsTable)
         db.execSQL(createAppsTable)
+        db.execSQL(createConvosTable)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -404,8 +423,68 @@ class DB private constructor(context: Context, databaseName: String = DATABASE_N
         return rowsUpdated
     }
 
+    fun addQuery(timestamp: Long, messages: List<Message>): Long {
+        val db = this.writableDatabase
+
+        var lastOffset = 0
+        val offsets = messages.map { msg ->
+            val start = lastOffset
+            val end = lastOffset + msg.content.length
+            lastOffset = end
+            """$start|$end"""
+        }
+
+        val values = ContentValues().apply {
+            put(COLUMN_CONVO_TIMESTAMP, timestamp)
+            put(COLUMN_CONVO, messages.map{ it.content }.joinToString(""))
+            put(COLUMN_CONVO_OFFSETS, offsets.joinToString(","))
+            put(COLUMN_CONVO_USER_IDS, messages.map{it.author.replace(",", "")}.joinToString { "," })
+        }
+
+        val result = db.insertWithOnConflict(TABLE_CONVOS, null, values, SQLiteDatabase.CONFLICT_IGNORE)
+
+        if (result == -1L) {
+            Log.e("DB", "Failed to add query")
+        } else {
+            Log.d("DB", "Query inserted successfully with id: $result")
+        }
+        return result
+    }
+
     fun getQueries(): List<Message> {
-        return emptyList()
+        val db = this.readableDatabase
+        val queries = mutableListOf<List<Message>>()
+
+        val query = """
+            SELECT a.$COLUMN_CONVO_TIMESTAMP, a.$COLUMN_CONVO, a.$COLUMN_CONVO_OFFSETS, a.$COLUMN_CONVO_USER_IDS
+            FROM $TABLE_CONVOS a
+        """.trimIndent()
+
+        val cursor = db.rawQuery(query, null)
+
+        if (cursor.moveToFirst()) {
+            val messages = mutableListOf<Message>()
+            do {
+                val offsets = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONVO_OFFSETS)).split(',')
+                val users = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONVO_USER_IDS)).split(',')
+
+//                val timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CONVO_TIMESTAMP))
+                val conversation = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONVO))
+
+                queries.add(
+                    offsets.mapIndexed { idx, value ->
+                        val (start, end) = value.split('|').map({ it.toInt() })
+                        val author = users[idx]
+                        Message(
+                            author,
+                            content = conversation.substring(start, end)
+                        )
+                    }
+                )
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return queries.flatten()
     }
 
     fun getAllApps(): List<AppInfo> {
