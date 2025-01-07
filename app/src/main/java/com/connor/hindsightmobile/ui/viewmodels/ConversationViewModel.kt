@@ -14,12 +14,14 @@ import android.os.Looper
 import android.text.format.Formatter
 import android.util.Log
 import androidx.annotation.MainThread
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.connor.hindsightmobile.App
+import com.connor.hindsightmobile.DB
 import com.connor.hindsightmobile.R
 import com.connor.hindsightmobile.models.ModelInfo
 import com.connor.hindsightmobile.models.ModelInfoProvider
@@ -37,10 +39,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Instant
 import java.util.TreeMap
 import kotlin.math.round
 
 class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
+    private val dbHelper: DB = DB.getInstance(app)
 
     private val llamaCpp: LlamaCpp? = (app as? App)?.llamaCpp
     private var llamaModel: LlamaModel? = null
@@ -247,6 +251,7 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
                     // wait for the response
                 }
                 llamaSession.printReport()
+                dbHelper.addQuery(Instant.now().epochSecond, listOf(uiState.messages.last()))
                 _isGenerating.postValue(false)
             }
         }
